@@ -43,6 +43,9 @@ try {
     fputcsv($output, ['Issues In Progress', $report['in_progress_count'] ?? $report['inProgressCount']]);
     fputcsv($output, ['Resolved Issues', $report['resolved_count'] ?? $report['resolvedCount']]);
 
+    fputcsv($output, []); 
+    fputcsv($output, ['AndyParmesan', 'Nikkonie']);
+
     fclose($output);
 
 } catch (Exception $e) {
