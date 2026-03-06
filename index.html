@@ -334,7 +334,22 @@ select.form-control option { background: #ffffff; color: #333333; }
     <div class="nav-section-label">Analytics</div>
     <a class="nav-item" data-view="reports"><span class="icon">📋</span> Reports</a>
   </div>
-  <div class="sidebar-footer">API: <span style="color:rgba(255,255,255,0.5)">localhost/issuetracker</span></div>
+  <div class="sidebar-footer">API: <span style="color:rgba(255,255,255,0.5)">issuetracker/api</span></div>
+
+  <button onclick="logout()" style="
+    width: calc(100% - 32px);
+    margin: 0 16px 12px 16px;
+    padding: 8px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  ">🚪 Logout</button>
+
 </nav>
 
 <!-- ===== MAIN ===== -->
@@ -488,9 +503,9 @@ select.form-control option { background: #ffffff; color: #333333; }
             <div class="form-row">
               <div class="form-group">
                 <label>Issued By</label>
-                <select class="form-control" id="ni-issued-by">
-                  <option value="">— Select —</option>
-                </select>
+                <div id="ni-issued-by-wrapper">
+                  <!-- Filled dynamically by setupIssuedBy() -->
+                </div>
               </div>
               <div class="form-group">
                 <label>Assigned To</label>
@@ -553,9 +568,9 @@ select.form-control option { background: #ffffff; color: #333333; }
               </div>
               <div class="form-group">
                 <label>Issued By</label>
-                <select class="form-control" id="us-issued-by">
-                  <option value="">— Select —</option>
-                </select>
+                <div id="us-issued-by-wrapper">
+                  <!-- Filled dynamically by setupIssuedBy() -->
+                </div>
               </div>
             </div>
 
@@ -892,9 +907,23 @@ select.form-control option { background: #ffffff; color: #333333; }
 
 <script>
 // ============================================================
+// SESSION CHECK & LOGOUT
+// ============================================================
+if (!localStorage.getItem('loggedIn')) {
+    window.location.href = 'login.html';
+}
+
+function logout() {
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    window.location.href = 'login.html';
+}
+
+// ============================================================
 // CONFIG
 // ============================================================
-const API = 'http://localhost/issuetracker/api';
+const API = window.location.protocol + '//' + window.location.hostname + '/issuetracker/api';
 
 // ============================================================
 // STATE
@@ -983,22 +1012,12 @@ async function loadUsers() {
 }
 
 function populateUserSelects() {
-  const reporters  = allUsers.filter(u => u.role === 'reporter');
   const developers = allUsers.filter(u => u.role === 'developer');
 
-  // Issued By — reporters only (Dianne, Kath, Jemson, Josh)
-  ['ni-issued-by', 'us-issued-by'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = '<option value="">— Select —</option>';
-    reporters.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u.id; opt.textContent = u.name;
-      sel.appendChild(opt);
-    });
-  });
+  // Issued By — smart based on who is logged in
+  setupIssuedBy();
 
-  // Assigned To — developers only (Stephen Dumili, Rocky)
+  // Assigned To — developers only
   ['ni-assigned-to', 'us-assigned-to', 'edit-assigned-to'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
@@ -1022,6 +1041,44 @@ function populateUserSelects() {
       importSel.appendChild(opt);
     });
   }
+}
+
+function setupIssuedBy() {
+  const role     = localStorage.getItem('role');
+  const userId   = localStorage.getItem('userId');
+  const userName = localStorage.getItem('userName');
+  const reporters = allUsers.filter(u => u.role === 'reporter');
+
+  ['ni', 'us'].forEach(prefix => {
+    const wrapper = document.getElementById(prefix + '-issued-by-wrapper');
+    if (!wrapper) return;
+
+    if (role === 'admin') {
+      // Admin gets a full dropdown of all reporters
+      const sel = document.createElement('select');
+      sel.className = 'form-control';
+      sel.id = prefix + '-issued-by';
+      sel.innerHTML = '<option value="">— Select —</option>';
+      reporters.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.name;
+        sel.appendChild(opt);
+      });
+      wrapper.innerHTML = '';
+      wrapper.appendChild(sel);
+    } else {
+      // Non-admin: auto-fill with logged-in user, no dropdown
+      const loggedUser = allUsers.find(u => String(u.id) === String(userId));
+      const displayName = loggedUser ? loggedUser.name : (userName || 'Unknown');
+      const uid = loggedUser ? loggedUser.id : (userId || '');
+      wrapper.innerHTML =
+        '<input type="hidden" id="' + prefix + '-issued-by" value="' + uid + '" />' +
+        '<div style="padding:9px 12px;background:#f8f8f8;border:1px solid var(--border);' +
+        'border-radius:7px;font-size:13px;color:var(--text-bright);font-weight:600;">' +
+        escHtml(displayName) + '</div>';
+    }
+  });
 }
 
 // ============================================================
@@ -1215,15 +1272,13 @@ async function viewIssue(id) {
                       onmouseover="this.style.color='#cc0000'" onmouseout="this.style.color='#ccc'">✕</button>
                   </div>
                   <div class="comment-text">${escHtml(c.comment || c.commentText || "")}</div>
-                </div>`;}).join('')
+                </div>`}).join('')
               : `<div style="color:var(--text-dim);font-size:12px;padding:8px 0;">No comments yet.</div>`
             }
           </div>
           <div class="comment-input-row" style="margin-top:12px;flex-direction:column;gap:8px;">
-            <div style="display:flex;gap:8px;align-items:center;">
-              <select class="form-control" id="comment-user-select" style="max-width:160px;">
-                ${allUsers.filter(u => u.role === 'reporter').map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
-              </select>
+            <div id="comment-user-wrapper" style="display:flex;gap:8px;align-items:center;">
+              ${buildCommentUserWidget()}
             </div>
             <textarea id="comment-text" placeholder="Add a comment…" rows="4" style="width:100%;resize:vertical;"></textarea>
             <div style="display:flex;justify-content:flex-end;">
@@ -1272,15 +1327,44 @@ function attachmentHTML(a, issueId) {
 // ============================================================
 // COMMENTS
 // ============================================================
-async function addComment() {
-  const userSel = document.getElementById('comment-user-select');
-  const textEl  = document.getElementById('comment-text');
-  if (!userSel || !textEl) return;
+function buildCommentUserWidget() {
+  const role     = localStorage.getItem('role');
+  const userId   = localStorage.getItem('userId');
+  const userName = localStorage.getItem('userName');
+  const reporters = allUsers.filter(u => u.role === 'reporter');
 
-  const userId  = userSel.value;
-  const author  = userSel.options[userSel.selectedIndex].text;
+  if (role === 'admin') {
+    // Admin gets dropdown of all reporters
+    const opts = reporters.map(u => `<option value="${u.id}">${escHtml(u.name)}</option>`).join('');
+    return `<select class="form-control" id="comment-user-select" style="max-width:160px;">
+              ${opts}
+            </select>`;
+  } else {
+    // Non-admin: locked to their own identity
+    const loggedUser = allUsers.find(u => String(u.id) === String(userId));
+    const displayName = loggedUser ? loggedUser.name : (userName || 'Unknown');
+    const uid = loggedUser ? loggedUser.id : (userId || '');
+    return `<input type="hidden" id="comment-user-select" value="${uid}" data-name="${escHtml(displayName)}" />
+            <div style="padding:6px 12px;background:#f8f8f8;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text-bright);font-weight:600;">
+              ${escHtml(displayName)}
+            </div>`;
+  }
+}
+
+async function addComment() {
+  const userEl  = document.getElementById('comment-user-select');
+  const textEl  = document.getElementById('comment-text');
+  if (!userEl || !textEl) return;
+
+  const role    = localStorage.getItem('role');
+  const userId  = userEl.value;
+  // Get author name — from dropdown text or data-name attribute
+  const author  = (role === 'admin' && userEl.tagName === 'SELECT')
+    ? userEl.options[userEl.selectedIndex]?.text
+    : (userEl.dataset.name || localStorage.getItem('userName') || 'User');
+
   const comment = textEl.value.trim();
-  if (!comment) return;
+  if (!comment) { toast('Please write a comment first.', 'error'); return; }
 
   try {
     const res = await apiFetch('/add_comment.php', {
@@ -1423,6 +1507,52 @@ async function submitNewIssue(e) {
 // ============================================================
 async function submitUserStory(e) {
   e.preventDefault();
+
+  // Required field validation
+  const requiredFields = [
+    { id: 'us-title',               label: 'Title' },
+    { id: 'us-state',               label: 'State' },
+    { id: 'us-assigned-to',         label: 'Assigned To' },
+    { id: 'us-issued-by',           label: 'Issued By' },
+    { id: 'us-area-path',           label: 'Area Path' },
+    { id: 'us-iteration-path',      label: 'Iteration Path' },
+    { id: 'us-desc',                label: 'Description' },
+    { id: 'us-dashboard',           label: 'Dashboard' },
+    { id: 'us-module',              label: 'Module' },
+    { id: 'us-story-points',        label: 'Story Points' },
+    { id: 'us-priority',            label: 'Priority' },
+    { id: 'us-acceptance-criteria', label: 'Acceptance Criteria' },
+    { id: 'us-date',                label: 'Date Identified' },
+  ];
+
+  // Clear previous highlights
+  requiredFields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) { el.style.borderColor = ''; el.style.boxShadow = ''; }
+  });
+
+  // Check each field
+  const missing = [];
+  requiredFields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el) return;
+    if (!el.value.trim()) {
+      missing.push(f.label);
+      el.style.borderColor = '#cc0000';
+      el.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
+    }
+  });
+
+  if (missing.length > 0) {
+    toast('Required: ' + missing.join(', '), 'error');
+    const firstMissing = requiredFields.find(f => {
+      const el = document.getElementById(f.id);
+      return el && !el.value.trim();
+    });
+    if (firstMissing) document.getElementById(firstMissing.id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   const btn = document.getElementById('us-submit-btn');
   btn.disabled = true;
   btn.innerHTML = '<div class="loader"></div> Saving…';
