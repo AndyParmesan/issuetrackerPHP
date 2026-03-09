@@ -337,7 +337,7 @@ select.form-control option { background: #ffffff; color: #333333; }
     <a class="nav-item" data-view="import"><span class="icon">📥</span> Import XLSX</a>
     <div class="nav-section-label">Analytics</div>
     <a class="nav-item" data-view="reports"><span class="icon">📋</span> Reports</a>
-    <a class="nav-item" id="nav-maintenance" onclick="openMaintenanceModal()" style="cursor:pointer;"><span class="icon">⚙️</span> Maintenance</a>
+    <a class="nav-item" id="nav-maintenance" onclick="openMaintenanceModal()" style="cursor:pointer;display:none;"><span class="icon">⚙️</span> Maintenance</a>
   </div>
   <div class="sidebar-footer">API: <span style="color:rgba(255,255,255,0.5)">issuetracker/api</span></div>
 
@@ -362,9 +362,9 @@ select.form-control option { background: #ffffff; color: #333333; }
   <div id="topbar">
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-sep"></div>
-    <div class="topbar-search">
+    <div class="topbar-search" id="topbar-search" style="display:none;">
       <span>🔍</span>
-      <input type="text" id="global-search" placeholder="Search issues…" />
+      <input type="text" id="global-search" placeholder="Search ID or description…" />
     </div>
     <button class="topbar-btn" id="topbar-new-btn" onclick="navigate('new-issue')" style="display:none;">➕ New Issue</button>
   </div>
@@ -800,7 +800,14 @@ select.form-control option { background: #ffffff; color: #333333; }
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><div class="card-title">Report History</div></div>
+        <div class="card-header">
+          <div class="card-title">Report History</div>
+          <div class="sep"></div>
+          <div class="topbar-search" style="width:220px;">
+            <span>🔍</span>
+            <input type="text" id="report-date-search" placeholder="Search date… (e.g. Mar)" oninput="filterReportHistory()" />
+          </div>
+        </div>
         <div class="card-body" id="report-history"><div class="empty-state"><div class="loader"></div></div></div>
       </div>
     </div>
@@ -991,15 +998,8 @@ select.form-control option { background: #ffffff; color: #333333; }
       <button class="modal-close" onclick="closeModal('employee-search-modal')" style="color:#7ecfff;">✕</button>
     </div>
     <div style="background:#1a3a4a;padding:8px 20px 12px;border-bottom:2px solid #2a5a6a;">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <div style="display:flex;gap:4px;">
-          <button id="emp-filter-all" onclick="setEmpFilter('all')"
-            style="padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;background:rgba(255,255,255,0.25);color:#fff;transition:all .15s;">ALL</button>
-          <button id="emp-filter-users" onclick="setEmpFilter('users')"
-            style="padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;background:transparent;color:rgba(255,255,255,0.5);transition:all .15s;">USERS</button>
-          <button id="emp-filter-particulars" onclick="setEmpFilter('particulars')"
-            style="padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;background:transparent;color:rgba(255,255,255,0.5);transition:all .15s;">PARTICULARS</button>
-        </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="color:#7ecfff;font-size:11px;font-family:'Roboto Mono',monospace;">&#9658; ALL EMPLOYEES</span>
         <input type="text" id="emp-search-input" placeholder="Search name, username, email…"
           style="margin-left:auto;padding:5px 12px;border:1px solid #4a7a8a;border-radius:5px;background:#0d2a38;color:#fff;font-size:12px;outline:none;width:260px;"
           oninput="filterEmployeeList()" />
@@ -1208,6 +1208,11 @@ function md5(string) {
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Show maintenance only for admin
+  if (localStorage.getItem('role') === 'admin') {
+    const m = document.getElementById('nav-maintenance');
+    if (m) m.style.display = '';
+  }
   loadUsers();
   loadDashboard();
   setTodayDate();
@@ -1244,6 +1249,12 @@ function navigate(view) {
   document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
   const titles = { dashboard:'Dashboard', issues:'All Issues', 'new-issue':'Log New Issue', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports' };
   document.getElementById('topbar-title').textContent = titles[view] || view;
+  // Show search bar only on All Issues
+  const searchBar = document.getElementById('topbar-search');
+  if (searchBar) {
+    searchBar.style.display = (view === 'issues') ? 'flex' : 'none';
+    if (view !== 'issues') document.getElementById('global-search').value = '';
+  }
   const newBtn = document.getElementById('topbar-new-btn');
   if (newBtn) newBtn.style.display = (view === 'issues') ? '' : 'none';
   if (view === 'issues')      loadIssues();
@@ -1458,22 +1469,74 @@ function recentIssueRow(i) {
 // ============================================================
 // ALL ISSUES
 // ============================================================
+let _issuesCache = [];
+let _issuesPage  = 1;
+const ISSUES_PER_PAGE = 10;
+
+function pgBtnStyle(active) {
+  return 'padding:4px 10px;border-radius:5px;border:1px solid ' + (active ? '#cc0000;background:#cc0000;color:#fff' : '#ddd;background:#fff;color:#555') + ';cursor:pointer;font-size:12px;font-family:\'Roboto Mono\',monospace;font-weight:600;min-width:32px;';
+}
+
 async function loadIssues() {
   const state    = document.getElementById('filter-state')?.value    || '';
   const priority = document.getElementById('filter-priority')?.value || '';
-  const search   = document.getElementById('global-search')?.value   || '';
+  const search   = document.getElementById('global-search')?.value.trim() || '';
   const params   = new URLSearchParams();
   if (state)    params.set('state', state);
   if (priority) params.set('priority', priority);
-  if (search)   params.set('search', search);
-
+  if (search && isNaN(search)) params.set('search', search);
   try {
     const res = await apiFetch(`/get_issues.php?${params}`);
-    const issues = res.data || [];
-    const tbody = document.getElementById('issues-body');
-    tbody.innerHTML = issues.length ? issues.map(i => allIssueRow(i)).join('') : emptyRow(12,'No issues found. Try adjusting filters.');
+    let issues = res.data || [];
+    if (search) {
+      const q = search.toLowerCase();
+      issues = issues.filter(i =>
+        String(i.id).includes(q) ||
+        (i.description || '').toLowerCase().includes(q) ||
+        (i.title       || '').toLowerCase().includes(q)
+      );
+    }
+    _issuesCache = issues;
+    _issuesPage  = 1;
+    renderIssuesPage();
   } catch { }
 }
+
+function renderIssuesPage() {
+  const tbody = document.getElementById('issues-body');
+  const total = _issuesCache.length;
+  const totalPages = Math.ceil(total / ISSUES_PER_PAGE) || 1;
+  if (_issuesPage > totalPages) _issuesPage = totalPages;
+  const start = (_issuesPage - 1) * ISSUES_PER_PAGE;
+  const page  = _issuesCache.slice(start, start + ISSUES_PER_PAGE);
+  tbody.innerHTML = page.length
+    ? page.map(i => allIssueRow(i)).join('')
+    : emptyRow(12, 'No issues found. Try adjusting filters.');
+  renderIssuesPagination(total, totalPages);
+}
+
+function renderIssuesPagination(total, totalPages) {
+  let pg = document.getElementById('issues-pagination');
+  if (!pg) {
+    pg = document.createElement('div');
+    pg.id = 'issues-pagination';
+    const wrapper = document.getElementById('issues-body').closest('.table-wrapper');
+    if (wrapper) wrapper.parentNode.insertBefore(pg, wrapper.nextSibling);
+  }
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  pg.style.cssText = 'display:flex;align-items:center;gap:6px;padding:12px 16px;border-top:1px solid #f0f0f0;justify-content:flex-end;flex-wrap:wrap;';
+  const cur = _issuesPage;
+  const pages = Array.from({length:totalPages},(_,i)=>i+1);
+  pg.innerHTML =
+    '<span style="font-size:11px;color:#888;font-family:\'Roboto Mono\',monospace;margin-right:8px;">' +
+      (start => (start+1))((_issuesPage-1)*ISSUES_PER_PAGE) + '\u2013' + Math.min(_issuesPage*ISSUES_PER_PAGE,total) + ' of ' + total +
+    '</span>' +
+    (cur > 1 ? '<button onclick="goIssuesPage('+(cur-1)+')" style="'+pgBtnStyle(false)+'">\u2039</button>' : '') +
+    pages.map(n => '<button onclick="goIssuesPage('+n+')" style="'+pgBtnStyle(n===cur)+'">'+n+'</button>').join('') +
+    (cur < totalPages ? '<button onclick="goIssuesPage('+(cur+1)+')" style="'+pgBtnStyle(false)+'">\u203a</button>' : '');
+}
+
+function goIssuesPage(n) { _issuesPage = n; renderIssuesPage(); }
 
 function allIssueRow(i) {
   return `<tr onclick="viewIssue(${i.id})">
@@ -1697,36 +1760,65 @@ async function loadMaintUsers() {
   }
 }
 
+let _usersPage = 1;
+const USERS_PER_PAGE = 5;
+
 function renderUserList(rows) {
   const tbody = document.getElementById('users-tbody');
   if (!tbody) return;
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#aaa;">No users found.</td></tr>';
+    renderUsersPagination(0, 1);
     return;
   }
-  tbody.innerHTML = rows.map((u, i) => {
+  const total = rows.length;
+  const totalPages = Math.ceil(total / USERS_PER_PAGE) || 1;
+  if (_usersPage > totalPages) _usersPage = totalPages;
+  const startIdx = (_usersPage - 1) * USERS_PER_PAGE;
+  const page = rows.slice(startIdx, startIdx + USERS_PER_PAGE);
+  const roleBgMap = {admin:'rgba(204,0,0,0.1)',developer:'rgba(46,158,107,0.1)',reporter:'rgba(255,165,0,0.1)',staff:'rgba(100,100,200,0.1)'};
+  const roleColorMap = {admin:'#cc0000',developer:'#2e9e6b',reporter:'#e07800',staff:'#4a64ce'};
+  tbody.innerHTML = page.map((u, i) => {
     const partName = u.particular_name
-      ? `<span style="padding:2px 8px;border-radius:12px;background:rgba(74,100,206,0.1);color:#4a64ce;font-size:10px;font-weight:700;">${escHtml(u.particular_name)}</span>`
-      : `<span style="color:#ccc;font-size:11px;">—</span>`;
-    const roleBg = {admin:'rgba(204,0,0,0.1)',developer:'rgba(46,158,107,0.1)',reporter:'rgba(255,165,0,0.1)',staff:'rgba(100,100,200,0.1)'}[u.role]||'rgba(200,200,200,0.1)';
-    const roleColor = {admin:'#cc0000',developer:'#2e9e6b',reporter:'#e07800',staff:'#4a64ce'}[u.role]||'#888';
-    return `<tr id="urow-${u.id}" onclick="selectUserRow(${u.id})" style="cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s;"
-        onmouseover="if(!this.classList.contains('selected'))this.style.background='#fafafa'"
-        onmouseout="if(!this.classList.contains('selected'))this.style.background=''">
-      <td style="padding:7px 10px;font-family:'Roboto Mono',monospace;font-size:11px;color:#888;">${i+1}</td>
-      <td style="padding:7px 10px;font-weight:600;font-size:12px;">${escHtml(u.username||'—')}</td>
-      <td style="padding:7px 10px;font-size:12px;">${escHtml(u.name||'—')}</td>
-      <td style="padding:7px 10px;"><span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:${roleBg};color:${roleColor};text-transform:uppercase;">${escHtml(u.role||'—')}</span></td>
-      <td style="padding:7px 10px;">${partName}</td>
-      <td style="padding:7px 10px;font-size:11px;color:#888;">${escHtml(u.email||'—')}</td>
-      <td style="padding:7px 10px;text-align:center;">
-        <button onclick="event.stopPropagation();deleteMaintUser(${u.id},'${escHtml(u.name||u.username||'').replace(/'/g,"\\'")}') "
-          style="padding:3px 8px;background:rgba(204,0,0,0.08);color:#cc0000;border:1px solid rgba(204,0,0,0.2);border-radius:4px;cursor:pointer;font-size:11px;">🗑</button>
-      </td>
-    </tr>`;
+      ? '<span style="padding:2px 8px;border-radius:12px;background:rgba(74,100,206,0.1);color:#4a64ce;font-size:10px;font-weight:700;">' + escHtml(u.particular_name) + '</span>'
+      : '<span style="color:#ccc;font-size:11px;">-</span>';
+    const roleBg    = roleBgMap[u.role]    || 'rgba(200,200,200,0.1)';
+    const roleColor = roleColorMap[u.role] || '#888';
+    const safeName  = escHtml(u.name||u.username||'').replace(/'/g, "\\'");
+    return '<tr id="urow-'+u.id+'" onclick="selectUserRow('+u.id+')" style="cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s;" onmouseover="if(!this.classList.contains(\'selected\'))this.style.background=\'#fafafa\'" onmouseout="if(!this.classList.contains(\'selected\'))this.style.background=\'\'">'+ 
+      '<td style="padding:7px 10px;font-family:Roboto Mono,monospace;font-size:11px;color:#888;">'+(startIdx+i+1)+'</td>'+ 
+      '<td style="padding:7px 10px;font-weight:600;font-size:12px;">'+escHtml(u.username||'-')+'</td>'+ 
+      '<td style="padding:7px 10px;font-size:12px;">'+escHtml(u.name||'-')+'</td>'+ 
+      '<td style="padding:7px 10px;"><span style="padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:'+roleBg+';color:'+roleColor+';text-transform:uppercase;">'+escHtml(u.role||'-')+'</span></td>'+ 
+      '<td style="padding:7px 10px;">'+partName+'</td>'+ 
+      '<td style="padding:7px 10px;font-size:11px;color:#888;">'+escHtml(u.email||'-')+'</td>'+ 
+      '<td style="padding:7px 10px;text-align:center;"><button onclick="event.stopPropagation();deleteMaintUser('+u.id+',\''+safeName+'\');" style="padding:3px 8px;background:rgba(204,0,0,0.08);color:#cc0000;border:1px solid rgba(204,0,0,0.2);border-radius:4px;cursor:pointer;font-size:11px;">Del</button></td>'+ 
+      '</tr>';
   }).join('');
+  renderUsersPagination(total, totalPages);
 }
 
+function renderUsersPagination(total, totalPages) {
+  let pg = document.getElementById('users-pagination');
+  if (!pg) {
+    pg = document.createElement('div');
+    pg.id = 'users-pagination';
+    const table = document.getElementById('users-tbody') && document.getElementById('users-tbody').closest('table');
+    if (table) table.parentNode.insertBefore(pg, table.nextSibling);
+  }
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  pg.style.cssText = 'display:flex;align-items:center;gap:6px;padding:10px 14px;border-top:1px solid #f0f0f0;justify-content:flex-end;flex-wrap:wrap;background:#fafafa;';
+  const cur = _usersPage;
+  pg.innerHTML =
+    '<span style="font-size:11px;color:#888;font-family:Roboto Mono,monospace;margin-right:6px;">'+((cur-1)*USERS_PER_PAGE+1)+'-'+Math.min(cur*USERS_PER_PAGE,total)+' of '+total+'</span>' +
+    (cur > 1 ? '<button onclick="goUsersPage('+(cur-1)+')" style="'+pgBtnStyle(false)+'">&lsaquo;</button>' : '') +
+    Array.from({length:totalPages},function(_,i){return i+1;}).map(function(n){
+      return '<button onclick="goUsersPage('+n+')" style="'+pgBtnStyle(n===cur)+'">'+n+'</button>';
+    }).join('') +
+    (cur < totalPages ? '<button onclick="goUsersPage('+(cur+1)+')" style="'+pgBtnStyle(false)+'">&rsaquo;</button>' : '');
+}
+
+function goUsersPage(n) { _usersPage = n; renderUserList(_allUsersCache); }
 function selectUserRow(id) {
   document.querySelectorAll('#users-tbody tr').forEach(r => {
     r.style.background = '';
@@ -2432,22 +2524,40 @@ async function generateReport() {
   } catch { }
 }
 
+let _reportHistoryCache = [];
+
 async function loadReportHistory() {
   try {
-    const res  = await apiFetch('/get_reports.php');
-    const list = res.data || [];
-    document.getElementById('report-history').innerHTML = list.length
-      ? list.map(r => `
-        <div class="report-history-item">
-          <div class="rh-icon">📋</div>
-          <div class="rh-info">
-            <div class="rh-title">${escHtml(r.date_range||'Custom')} — ${escHtml(r.status_filter)}</div>
-            <div class="rh-sub">${r.total_issues||0} issues · ${fmtDateTime(r.generated_at)}</div>
-          </div>
-          <button class="btn btn-success btn-xs" onclick="window.open('${API}/download_report.php?id=${r.id}','_blank')">⬇ CSV</button>
-        </div>`).join('')
-      : `<div class="empty-state"><div class="es-icon">📋</div><div class="es-title">No reports yet</div><div class="es-sub">Generate your first report above.</div></div>`;
+    const res = await apiFetch('/get_reports.php');
+    _reportHistoryCache = res.data || [];
+    renderReportHistory(_reportHistoryCache);
   } catch { }
+}
+
+function filterReportHistory() {
+  const q = (document.getElementById('report-date-search')?.value || '').toLowerCase().trim();
+  if (!q) { renderReportHistory(_reportHistoryCache); return; }
+  const filtered = _reportHistoryCache.filter(r => {
+    const raw = (r.generated_at || '').toLowerCase();
+    const fmt = fmtDateTime(r.generated_at).toLowerCase();
+    return raw.includes(q) || fmt.includes(q);
+  });
+  renderReportHistory(filtered);
+}
+
+function renderReportHistory(list) {
+  document.getElementById('report-history').innerHTML = list.length
+    ? list.map(r =>
+        '<div class="report-history-item">'+
+        '<div class="rh-icon">&#128203;</div>'+
+        '<div class="rh-info">'+
+          '<div class="rh-title">'+escHtml(r.date_range||'Custom')+' — '+escHtml(r.status_filter)+'</div>'+
+          '<div class="rh-sub">'+( r.total_issues||0)+' issues · '+fmtDateTime(r.generated_at)+'</div>'+
+        '</div>'+
+        '<button class="btn btn-success btn-xs" onclick="window.open(\''+API+'/download_report.php?id='+r.id+'\',\'_blank\')">&#8595; CSV</button>'+
+        '</div>'
+      ).join('')
+    : '<div class="empty-state"><div class="es-icon">&#128203;</div><div class="es-title">No reports found</div><div class="es-sub">Try a different date or generate a new report.</div></div>';
 }
 
 async function exportIssues() {
