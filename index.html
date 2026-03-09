@@ -991,10 +991,17 @@ select.form-control option { background: #ffffff; color: #333333; }
       <button class="modal-close" onclick="closeModal('employee-search-modal')" style="color:#7ecfff;">✕</button>
     </div>
     <div style="background:#1a3a4a;padding:8px 20px 12px;border-bottom:2px solid #2a5a6a;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="color:#7ecfff;font-size:11px;font-family:'Roboto Mono',monospace;">▶ EMPLOYEE / FE / DISPATCHER</span>
-        <input type="text" id="emp-search-input" placeholder="Search name…"
-          style="margin-left:auto;padding:5px 12px;border:1px solid #4a7a8a;border-radius:5px;background:#0d2a38;color:#fff;font-size:12px;outline:none;width:220px;"
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="display:flex;gap:4px;">
+          <button id="emp-filter-all" onclick="setEmpFilter('all')"
+            style="padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;background:rgba(255,255,255,0.25);color:#fff;transition:all .15s;">ALL</button>
+          <button id="emp-filter-users" onclick="setEmpFilter('users')"
+            style="padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;background:transparent;color:rgba(255,255,255,0.5);transition:all .15s;">USERS</button>
+          <button id="emp-filter-particulars" onclick="setEmpFilter('particulars')"
+            style="padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;background:transparent;color:rgba(255,255,255,0.5);transition:all .15s;">PARTICULARS</button>
+        </div>
+        <input type="text" id="emp-search-input" placeholder="Search name, username, email…"
+          style="margin-left:auto;padding:5px 12px;border:1px solid #4a7a8a;border-radius:5px;background:#0d2a38;color:#fff;font-size:12px;outline:none;width:260px;"
           oninput="filterEmployeeList()" />
       </div>
     </div>
@@ -1003,11 +1010,11 @@ select.form-control option { background: #ffffff; color: #333333; }
         <thead>
           <tr style="background:#1a3a4a;position:sticky;top:0;">
             <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;width:50px;">LINE#</th>
-            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;">MERCHANT / NAME</th>
-            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;">ADDRESS</th>
-            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;">CONTACT PERSON</th>
-            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;width:110px;">MOBILE NO.</th>
-            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;width:90px;">DEPT</th>
+            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;">NAME</th>
+            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;">USERNAME</th>
+            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;">EMAIL</th>
+            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;width:100px;">ROLE</th>
+            <th style="padding:7px 10px;text-align:left;color:#7ecfff;font-family:'Roboto Mono',monospace;font-size:10px;width:100px;">PARTICULAR</th>
           </tr>
         </thead>
         <tbody id="employee-search-tbody">
@@ -1016,7 +1023,7 @@ select.form-control option { background: #ffffff; color: #333333; }
       </table>
     </div>
     <div style="background:#f0f0f0;padding:10px 20px;border-top:1px solid #ddd;font-size:11px;color:#555;font-family:'Roboto Mono',monospace;">
-      Click a row to select the employee and fill the form.
+      Click a row to fill the Name field. Users also auto-fill their Particular assignment.
     </div>
   </div>
 </div>
@@ -1817,27 +1824,71 @@ async function deleteMaintUser(id, name) {
 }
 
 // ── EMPLOYEE SEARCH ───────────────────────────────────────────
-let _allParticularsCache = [];
+let _empUsersCache = [];
+let _empParticularsCache = [];
+let _empFilter = 'all';
 
 async function openEmployeeSearch() {
   openModal('employee-search-modal');
   document.getElementById('emp-search-input').value = '';
+  _empFilter = 'all';
+  setEmpFilter('all');
   const tbody = document.getElementById('employee-search-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;"><div class="loader"></div></td></tr>';
   try {
-    const res = await apiFetch('/get_particulars.php');
-    _allParticularsCache = res.data || [];
-    renderEmployeeList(_allParticularsCache);
+    const [uRes, pRes] = await Promise.all([
+      apiFetch('/get_users_full.php'),
+      apiFetch('/get_particulars.php')
+    ]);
+    _empUsersCache       = uRes.data || [];
+    _empParticularsCache = pRes.data || [];
+    renderEmployeeList(getMergedEmpList('', 'all'));
   } catch {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#cc0000;">Failed to load.</td></tr>';
   }
   setTimeout(() => document.getElementById('emp-search-input').focus(), 150);
 }
 
+function setEmpFilter(filter) {
+  _empFilter = filter;
+  ['all','users','particulars'].forEach(f => {
+    const btn = document.getElementById('emp-filter-' + f);
+    if (!btn) return;
+    btn.style.background  = f === filter ? 'rgba(255,255,255,0.25)' : 'transparent';
+    btn.style.color       = f === filter ? '#fff' : 'rgba(255,255,255,0.5)';
+  });
+  const q = document.getElementById('emp-search-input')?.value || '';
+  renderEmployeeList(getMergedEmpList(q, filter));
+}
+
 function filterEmployeeList() {
-  const q = document.getElementById('emp-search-input').value.toLowerCase();
-  const filtered = q ? _allParticularsCache.filter(p => p.name.toLowerCase().includes(q)) : _allParticularsCache;
-  renderEmployeeList(filtered);
+  const q = document.getElementById('emp-search-input').value;
+  renderEmployeeList(getMergedEmpList(q, _empFilter));
+}
+
+function getMergedEmpList(q, filter) {
+  const term = q.toLowerCase().trim();
+  let results = [];
+
+  if (filter === 'all' || filter === 'users') {
+    const users = _empUsersCache
+      .filter(u => !term ||
+        (u.name     || '').toLowerCase().includes(term) ||
+        (u.username || '').toLowerCase().includes(term) ||
+        (u.email    || '').toLowerCase().includes(term)
+      )
+      .map(u => ({ type: 'user', id: u.id, name: u.name, username: u.username || '—', email: u.email || '—', role: u.role || '—', particular: u.particular_name || '—', isActive: u.isActive ?? 1 }));
+    results = results.concat(users);
+  }
+
+  if (filter === 'all' || filter === 'particulars') {
+    const parts = _empParticularsCache
+      .filter(p => !term || (p.name || '').toLowerCase().includes(term))
+      .map(p => ({ type: 'particular', id: p.particular_id, name: p.name, username: '—', email: '—', role: 'Particular', particular: p.name, isActive: p.isActive ?? 1 }));
+    results = results.concat(parts);
+  }
+
+  return results;
 }
 
 function renderEmployeeList(rows) {
@@ -1846,28 +1897,48 @@ function renderEmployeeList(rows) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#aaa;">No results found.</td></tr>';
     return;
   }
-  tbody.innerHTML = rows.map((p, i) => `
-    <tr data-pid="${p.particular_id}" data-pname="${escHtml(p.name)}"
-      onclick="selectEmployeeRow(this)"
-      style="cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s;"
-      onmouseover="this.style.background='rgba(204,0,0,0.07)'" onmouseout="this.style.background=''">
+  tbody.innerHTML = rows.map((r, i) => {
+    const typePill = r.type === 'user'
+      ? `<span style="padding:2px 7px;border-radius:12px;font-size:9px;font-weight:700;background:rgba(74,100,206,0.15);color:#4a64ce;text-transform:uppercase;">${escHtml(r.role)}</span>`
+      : `<span style="padding:2px 7px;border-radius:12px;font-size:9px;font-weight:700;background:rgba(204,0,0,0.12);color:#cc0000;text-transform:uppercase;">Particular</span>`;
+    const statusPill = `<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;
+      background:${r.isActive==1?'rgba(46,158,107,0.12)':'rgba(136,136,136,0.12)'};
+      color:${r.isActive==1?'#2e9e6b':'#888'};">${r.isActive==1?'Active':'Inactive'}</span>`;
+    return `<tr
+        data-type="${r.type}"
+        data-id="${r.id}"
+        data-name="${escHtml(r.name)}"
+        onclick="selectEmployeeRow(this)"
+        style="cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s;"
+        onmouseover="this.style.background='rgba(204,0,0,0.05)'" onmouseout="this.style.background=''">
       <td style="padding:7px 10px;font-family:'Roboto Mono',monospace;font-size:11px;color:#888;">${i+1}</td>
-      <td style="padding:7px 10px;font-weight:600;font-size:12px;">${escHtml(p.name)}</td>
-      <td style="padding:7px 10px;font-size:12px;color:#888;">—</td>
-      <td style="padding:7px 10px;font-size:12px;color:#888;">—</td>
-      <td style="padding:7px 10px;font-size:12px;color:#888;">—</td>
-      <td style="padding:7px 10px;font-size:11px;">
-        <span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;
-          background:${p.isActive==1?'rgba(46,158,107,0.12)':'rgba(136,136,136,0.12)'};
-          color:${p.isActive==1?'#2e9e6b':'#888'};">${p.isActive==1?'Active':'Inactive'}</span>
-      </td>
-    </tr>`).join('');
+      <td style="padding:7px 10px;font-weight:600;font-size:12px;">${escHtml(r.name)}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#555;font-family:'Roboto Mono',monospace;">${escHtml(r.username)}</td>
+      <td style="padding:7px 10px;font-size:11px;color:#888;">${escHtml(r.email)}</td>
+      <td style="padding:7px 10px;">${typePill}</td>
+      <td style="padding:7px 10px;">${r.type === 'user' ? statusPill : `<span style="font-size:11px;color:#888;">${escHtml(r.particular)}</span>`}</td>
+    </tr>`;
+  }).join('');
 }
 
 function selectEmployeeRow(tr) {
-  const particularId = tr.dataset.pid;
-  const name = tr.dataset.pname;
-  selectEmployee(particularId, name);
+  const type = tr.dataset.type;
+  const id   = tr.dataset.id;
+  const name = tr.dataset.name;
+  if (type === 'user') {
+    // Fill name — particular_id stays as-is unless the user has one
+    const user = _empUsersCache.find(u => String(u.id) === String(id));
+    document.getElementById('umaint-name').value = name;
+    if (user && user.particular_id) {
+      document.getElementById('umaint-particular-id').value = user.particular_id;
+    }
+  } else {
+    // Particular selected — fill name + particular_id
+    document.getElementById('umaint-name').value = name;
+    document.getElementById('umaint-particular-id').value = id;
+  }
+  closeModal('employee-search-modal');
+  document.getElementById('umaint-username').focus();
 }
 
 function selectEmployee(particularId, name) {
