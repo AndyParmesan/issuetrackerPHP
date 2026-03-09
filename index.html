@@ -1925,18 +1925,44 @@ function selectEmployeeRow(tr) {
   const type = tr.dataset.type;
   const id   = tr.dataset.id;
   const name = tr.dataset.name;
+
   if (type === 'user') {
-    // Fill name — particular_id stays as-is unless the user has one
     const user = _empUsersCache.find(u => String(u.id) === String(id));
-    document.getElementById('umaint-name').value = name;
-    if (user && user.particular_id) {
-      document.getElementById('umaint-particular-id').value = user.particular_id;
+    if (!user) return;
+
+    // Fill all form fields from user record
+    document.getElementById('umaint-id').value             = user.id        || '';
+    document.getElementById('umaint-name').value           = user.name      || '';
+    document.getElementById('umaint-username').value       = user.username  || '';
+    document.getElementById('umaint-email').value          = user.email     || '';
+    document.getElementById('umaint-role').value           = user.role      || 'reporter';
+    document.getElementById('umaint-particular-id').value  = user.particular_id || '';
+
+    // Clear password fields — don't expose or overwrite existing password
+    document.getElementById('umaint-password').value  = '';
+    document.getElementById('umaint-password2').value = '';
+    document.getElementById('umaint-md5').value       = '';
+    document.getElementById('umaint-hash').value      = '';
+
+    // Highlight the matching row in the users table if visible
+    document.querySelectorAll('#users-tbody tr').forEach(r => {
+      r.style.background = '';
+      r.classList.remove('selected');
+    });
+    const matchRow = document.getElementById('urow-' + user.id);
+    if (matchRow) {
+      matchRow.style.background = 'rgba(204,0,0,0.06)';
+      matchRow.classList.add('selected');
     }
+
+    toast('Loaded: ' + user.name, 'info');
+
   } else {
-    // Particular selected — fill name + particular_id
-    document.getElementById('umaint-name').value = name;
+    // Particular selected — only fill name + particular_id
+    document.getElementById('umaint-name').value          = name;
     document.getElementById('umaint-particular-id').value = id;
   }
+
   closeModal('employee-search-modal');
   document.getElementById('umaint-username').focus();
 }
