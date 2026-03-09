@@ -331,6 +331,7 @@ select.form-control option { background: #ffffff; color: #333333; }
     <a class="nav-item" data-view="new-issue"><span class="icon">🐛</span> New Issue</a>
     <a class="nav-item" data-view="user-story"><span class="icon">📖</span> User Story</a>
     <a class="nav-item" data-view="import"><span class="icon">📥</span> Import XLSX</a>
+    <a class="nav-item" onclick="openMaintenanceModal()"><span class="icon">⚙️</span> Maintenance</a>
     <div class="nav-section-label">Analytics</div>
     <a class="nav-item" data-view="reports"><span class="icon">📋</span> Reports</a>
   </div>
@@ -800,6 +801,147 @@ select.form-control option { background: #ffffff; color: #333333; }
       </div>
     </div>
 
+    <!-- ===== MAINTENANCE ===== -->
+    <div class="view" id="view-maintenance">
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button id="maint-tab-particulars" onclick="switchMaintTab('particulars')"
+          style="padding:8px 22px;border-radius:7px;border:2px solid #cc0000;background:#cc0000;color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;">
+          📋 Particulars
+        </button>
+        <button id="maint-tab-users" onclick="switchMaintTab('users')"
+          style="padding:8px 22px;border-radius:7px;border:2px solid rgba(204,0,0,0.3);background:#fff;color:#cc0000;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;">
+          👥 Users
+        </button>
+      </div>
+
+      <!-- PARTICULARS TAB -->
+      <div id="maint-panel-particulars">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Particular Master File</div>
+            <button class="btn btn-primary btn-sm" onclick="openParticularModal('add')">➕ New Particular</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="issues-table">
+              <thead>
+                <tr>
+                  <th style="width:60px;">ID</th>
+                  <th>Particular Name</th>
+                  <th style="width:120px;">Status</th>
+                  <th style="width:130px;">Created</th>
+                  <th style="width:130px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="particular-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:32px;"><div class="loader"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS TAB -->
+      <div id="maint-panel-users" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👥 User Master File</div>
+            <button class="btn btn-primary btn-sm" onclick="openUserModal('add')">➕ New User</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="issues-table">
+              <thead>
+                <tr>
+                  <th style="width:50px;">ID</th>
+                  <th>Name</th>
+                  <th>Username</th>
+                  <th style="width:100px;">Role</th>
+                  <th style="width:120px;">Status</th>
+                  <th style="width:130px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:32px;"><div class="loader"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== PARTICULAR MODAL ===== -->
+<div class="modal-overlay" id="particular-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="particular-modal-title">New Particular</div>
+      <button class="modal-close" onclick="closeModal('particular-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="part-id" />
+      <div class="form-group">
+        <label>Particular Name <span style="color:#cc0000">*</span></label>
+        <input type="text" class="form-control" id="part-name" placeholder="e.g. MCC, SEC, Inventory…" />
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" id="part-active">
+          <option value="1">Active</option>
+          <option value="0">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('particular-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="part-save-btn" onclick="saveParticular()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== USER MODAL ===== -->
+<div class="modal-overlay" id="user-maint-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="user-modal-title">New User</div>
+      <button class="modal-close" onclick="closeModal('user-maint-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="umaint-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name <span style="color:#cc0000">*</span></label>
+          <input type="text" class="form-control" id="umaint-name" placeholder="e.g. Juan dela Cruz" />
+        </div>
+        <div class="form-group">
+          <label>Username <span style="color:#cc0000">*</span></label>
+          <input type="text" class="form-control" id="umaint-username" placeholder="e.g. juan" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password <span id="umaint-pw-hint" style="color:#aaa;font-weight:400;text-transform:none;">(leave blank to keep)</span></label>
+          <input type="password" class="form-control" id="umaint-password" placeholder="New password…" />
+        </div>
+        <div class="form-group">
+          <label>Role <span style="color:#cc0000">*</span></label>
+          <select class="form-control" id="umaint-role">
+            <option value="reporter">Reporter</option>
+            <option value="developer">Developer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" id="umaint-email" placeholder="e.g. juan@issuetracker.local" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('user-maint-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="umaint-save-btn" onclick="saveMaintUser()">💾 Save</button>
+    </div>
   </div>
 </div>
 
@@ -905,6 +1047,104 @@ select.form-control option { background: #ffffff; color: #333333; }
 
 <div id="toast-container"></div>
 
+<!-- ===== MAINTENANCE MODAL ===== -->
+<div class="modal-overlay" id="maintenance-modal">
+  <div class="modal" style="width:600px;">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Maintenance</div>
+      <button class="modal-close" onclick="closeModal('maintenance-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Tabs for Maintenance -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:12px;">
+        <button class="btn btn-sm" id="maint-tab-users" onclick="switchMaintTab('users')" style="background:#cc0000;color:#fff;border:1px solid #cc0000;">Users</button>
+        <button class="btn btn-sm" id="maint-tab-particulars" onclick="switchMaintTab('particulars')" style="background:#fff;color:#333;border:1px solid #ccc;">Particulars</button>
+      </div>
+      
+      <!-- Users Tab -->
+      <div id="maint-users-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:600;color:#333;">User Management</div>
+          <button class="btn btn-primary btn-sm" onclick="showAddUserForm()">➕ Add User</button>
+        </div>
+        <div class="table-wrapper" style="max-height:300px;overflow-y:auto;">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Particular</th><th>Actions</th></tr></thead>
+            <tbody id="maint-users-body">
+              <tr><td colspan="5"><div class="loader"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Add User Form (hidden by default) -->
+        <div id="add-user-form" style="display:none;background:#f8f8f8;padding:16px;border-radius:8px;margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Add New User</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="new-user-name" class="form-control" placeholder="Full Name" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="new-user-email" class="form-control" placeholder="email@example.com" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Role</label>
+              <select id="new-user-role" class="form-control">
+                <option value="reporter">Reporter</option>
+                <option value="developer">Developer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Particular</label>
+              <select id="new-user-particular" class="form-control">
+                <option value="">— None —</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+            <button class="btn btn-ghost btn-sm" onclick="hideAddUserForm()">Cancel</button>
+            <button class="btn btn-primary btn-sm" onclick="saveNewUser()">Save User</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Particulars Tab -->
+      <div id="maint-particulars-panel" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:600;color:#333;">Particulars Management</div>
+          <button class="btn btn-primary btn-sm" onclick="showAddParticularForm()">➕ Add Particular</button>
+        </div>
+        <div class="table-wrapper" style="max-height:300px;overflow-y:auto;">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="maint-particulars-body">
+              <tr><td colspan="4"><div class="loader"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Add Particular Form (hidden by default) -->
+        <div id="add-particular-form" style="display:none;background:#f8f8f8;padding:16px;border-radius:8px;margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Add New Particular</div>
+          <div class="form-group">
+            <label>Particular Name</label>
+            <input type="text" id="new-particular-name" class="form-control" placeholder="e.g. MCC, SEC, Inventory" />
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+            <button class="btn btn-ghost btn-sm" onclick="hideAddParticularForm()">Cancel</button>
+            <button class="btn btn-primary btn-sm" onclick="saveNewParticular()">Save Particular</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('maintenance-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // SESSION CHECK & LOGOUT
@@ -968,11 +1208,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // NAVIGATION
 // ============================================================
 function navigate(view) {
+  if (view === 'maintenance') { setTimeout(loadParticulars, 100); }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(`view-${view}`)?.classList.add('active');
   document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
-  const titles = { dashboard:'Dashboard', issues:'All Issues', 'new-issue':'Log New Issue', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports' };
+  const titles = { dashboard:'Dashboard', issues:'All Issues', 'new-issue':'Log New Issue', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports', maintenance:'Maintenance' };
   document.getElementById('topbar-title').textContent = titles[view] || view;
   // #2 — only show "+ New Issue" button on All Issues tab
   const newBtn = document.getElementById('topbar-new-btn');
@@ -1323,6 +1564,178 @@ function attachmentHTML(a, issueId) {
     <button class="attachment-delete" onclick="deleteAttachment(${a.id}, ${issueId})">✕</button>
   </div>`;
 }
+
+// ============================================================
+// MAINTENANCE — PARTICULARS CRUD
+// ============================================================
+// ── Tab switcher ──────────────────────────────────────────────
+function switchMaintTab(tab) {
+  ['particulars','users'].forEach(t => {
+    document.getElementById('maint-panel-' + t).style.display = t === tab ? '' : 'none';
+    const btn = document.getElementById('maint-tab-' + t);
+    if (t === tab) {
+      btn.style.background = '#cc0000'; btn.style.color = '#fff'; btn.style.borderColor = '#cc0000';
+    } else {
+      btn.style.background = '#fff'; btn.style.color = '#cc0000'; btn.style.borderColor = 'rgba(204,0,0,0.3)';
+    }
+  });
+  if (tab === 'particulars') loadParticulars();
+  if (tab === 'users') loadMaintUsers();
+}
+
+// ── PARTICULARS CRUD ──────────────────────────────────────────
+async function loadParticulars() {
+  const tbody = document.getElementById('particular-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;"><div class="loader"></div></td></tr>';
+  try {
+    const res = await apiFetch('/get_particulars.php');
+    const rows = res.data || [];
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#aaa;">No particulars yet. Add one to get started.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(p => `
+      <tr>
+        <td style="font-size:12px;color:var(--text-dim);">#${p.particular_id}</td>
+        <td style="font-weight:600;">${escHtml(p.name)}</td>
+        <td><span style="padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;
+          background:${p.isActive==1?'rgba(46,158,107,0.12)':'rgba(136,136,136,0.12)'};
+          color:${p.isActive==1?'#2e9e6b':'#888'};">${p.isActive==1?'Active':'Inactive'}</span></td>
+        <td style="font-size:12px;color:var(--text-dim);">${(p.created_at||'').split(' ')[0]||'—'}</td>
+        <td><div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="openParticularModal('edit',${p.particular_id},'${escHtml(p.name).replace(/'/g,"\'")}',${p.isActive})">✏️ Edit</button>
+          <button class="btn btn-sm" style="background:rgba(204,0,0,0.08);color:#cc0000;border:1px solid rgba(204,0,0,0.2);" onclick="deleteParticular(${p.particular_id},'${escHtml(p.name).replace(/'/g,"\'")}')">🗑</button>
+        </div></td>
+      </tr>`).join('');
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#cc0000;">Failed to load particulars.</td></tr>';
+  }
+}
+
+function openParticularModal(mode, id='', name='', isActive=1) {
+  document.getElementById('part-id').value    = id;
+  document.getElementById('part-name').value  = name;
+  document.getElementById('part-active').value = isActive;
+  document.getElementById('particular-modal-title').textContent = mode==='add' ? '➕ New Particular' : '✏️ Edit Particular';
+  document.getElementById('part-save-btn').textContent = mode==='add' ? '💾 Save' : '💾 Update';
+  document.getElementById('particular-modal').classList.add('open');
+  setTimeout(() => document.getElementById('part-name').focus(), 100);
+}
+
+async function saveParticular() {
+  const id     = document.getElementById('part-id').value;
+  const name   = document.getElementById('part-name').value.trim();
+  const active = document.getElementById('part-active').value;
+  if (!name) { document.getElementById('part-name').style.borderColor='#cc0000'; toast('Particular name is required.','error'); return; }
+  document.getElementById('part-name').style.borderColor = '';
+  const btn = document.getElementById('part-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const res = await apiFetch(id ? '/update_particular.php' : '/create_particular.php', {
+      method: 'POST', body: JSON.stringify({ id, name, isActive: active })
+    });
+    if (res.success) { toast(id ? 'Particular updated!' : 'Particular created!', 'success'); closeModal('particular-modal'); loadParticulars(); }
+    else toast(res.message || 'Failed to save.', 'error');
+  } catch { toast('Failed to save particular.', 'error'); }
+  finally { btn.disabled=false; btn.textContent='💾 '+(id?'Update':'Save'); }
+}
+
+async function deleteParticular(id, name) {
+  if (!confirm(`Delete particular "${name}"? This cannot be undone.`)) return;
+  try {
+    const res = await apiFetch(`/delete_particular.php?id=${id}`, { method: 'GET' });
+    if (res.success) { toast('Particular deleted.', 'success'); loadParticulars(); }
+    else toast(res.message || 'Failed to delete.', 'error');
+  } catch { toast('Failed to delete particular.', 'error'); }
+}
+
+// ── USERS CRUD ────────────────────────────────────────────────
+async function loadMaintUsers() {
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;"><div class="loader"></div></td></tr>';
+  try {
+    const res = await apiFetch('/get_users_full.php');
+    const rows = res.data || [];
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#aaa;">No users found.</td></tr>'; return; }
+    const roleColors = { admin:'#cc0000', developer:'#4a64ce', reporter:'#2e9e6b' };
+    tbody.innerHTML = rows.map(u => `
+      <tr>
+        <td style="font-size:12px;color:var(--text-dim);">#${u.id}</td>
+        <td style="font-weight:600;">${escHtml(u.name)}</td>
+        <td style="font-size:12px;">${escHtml(u.username||'—')}</td>
+        <td><span style="padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;
+          background:${roleColors[u.role]||'#888'}18;color:${roleColors[u.role]||'#888'};">${u.role}</span></td>
+        <td><span style="padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;
+          background:rgba(46,158,107,0.12);color:#2e9e6b;">Active</span></td>
+        <td><div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="openUserModal('edit',${u.id},'${escHtml(u.name).replace(/'/g,"\'")}','${escHtml(u.username||'').replace(/'/g,"\'")}','${u.role}','${escHtml(u.email||'').replace(/'/g,"\'")}')">✏️ Edit</button>
+          <button class="btn btn-sm" style="background:rgba(204,0,0,0.08);color:#cc0000;border:1px solid rgba(204,0,0,0.2);" onclick="deleteMaintUser(${u.id},'${escHtml(u.name).replace(/'/g,"\'")}')">🗑</button>
+        </div></td>
+      </tr>`).join('');
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#cc0000;">Failed to load users.</td></tr>';
+  }
+}
+
+function openUserModal(mode, id='', name='', username='', role='reporter', email='') {
+  document.getElementById('umaint-id').value       = id;
+  document.getElementById('umaint-name').value     = name;
+  document.getElementById('umaint-username').value = username;
+  document.getElementById('umaint-password').value = '';
+  document.getElementById('umaint-role').value     = role;
+  document.getElementById('umaint-email').value    = email;
+  document.getElementById('user-modal-title').textContent   = mode==='add' ? '➕ New User' : '✏️ Edit User';
+  document.getElementById('umaint-save-btn').textContent    = mode==='add' ? '💾 Save' : '💾 Update';
+  document.getElementById('umaint-pw-hint').style.display   = mode==='add' ? 'none' : '';
+  document.getElementById('user-maint-modal').classList.add('open');
+  setTimeout(() => document.getElementById('umaint-name').focus(), 100);
+}
+
+async function saveMaintUser() {
+  const id       = document.getElementById('umaint-id').value;
+  const name     = document.getElementById('umaint-name').value.trim();
+  const username = document.getElementById('umaint-username').value.trim();
+  const password = document.getElementById('umaint-password').value.trim();
+  const role     = document.getElementById('umaint-role').value;
+  const email    = document.getElementById('umaint-email').value.trim();
+
+  let hasErr = false;
+  ['umaint-name','umaint-username'].forEach(fid => {
+    const el = document.getElementById(fid);
+    if (!el.value.trim()) { el.style.borderColor='#cc0000'; hasErr=true; } else el.style.borderColor='';
+  });
+  if (hasErr) { toast('Name and Username are required.','error'); return; }
+
+  // MD5 hash the password if provided
+  const hashedPw = password ? md5(password) : '';
+
+  const btn = document.getElementById('umaint-save-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try {
+    const res = await apiFetch(id ? '/update_user_maint.php' : '/create_user_maint.php', {
+      method:'POST', body: JSON.stringify({ id, name, username, password: hashedPw, role, email })
+    });
+    if (res.success) {
+      toast(id ? 'User updated!' : 'User created!', 'success');
+      closeModal('user-maint-modal');
+      loadMaintUsers();
+      loadUsers(); // refresh dropdowns too
+    } else toast(res.message||'Failed to save.','error');
+  } catch { toast('Failed to save user.','error'); }
+  finally { btn.disabled=false; btn.textContent='💾 '+(id?'Update':'Save'); }
+}
+
+async function deleteMaintUser(id, name) {
+  if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
+  try {
+    const res = await apiFetch(`/delete_user_maint.php?id=${id}`, { method:'GET' });
+    if (res.success) { toast('User deleted.','success'); loadMaintUsers(); loadUsers(); }
+    else toast(res.message||'Failed to delete.','error');
+  } catch { toast('Failed to delete user.','error'); }
+}
+
 
 // ============================================================
 // COMMENTS
@@ -1968,7 +2381,7 @@ async function deleteAttachment(attachmentId, issueId) {
     // FIX: uses the new delete_attachment.php with correct params
     const res  = await fetch(`${API}/delete_attachment.php?issueId=${issueId}&attachmentId=${attachmentId}`);
     const data = await res.json();
-    if (data.success) {
+    if (data.success) { 
       toast('Attachment removed.', 'success');
       await refreshAttachments(issueId);
     } else {
@@ -2076,6 +2489,254 @@ function formatSize(bytes) {
   if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
   return (bytes/(1024*1024)).toFixed(1) + ' MB';
 }
+
+// ============================================================
+// MAINTENANCE MODAL FUNCTIONS
+// ============================================================
+
+// Open Maintenance Modal
+async function openMaintenanceModal() {
+  openModal('maintenance-modal');
+  // Load data for both tabs
+  loadMaintUsers();
+  loadMaintParticulars();
+}
+
+// Switch between Users and Particulars tabs
+function switchMaintTab(tab) {
+  const usersBtn = document.getElementById('maint-tab-users');
+  const partsBtn = document.getElementById('maint-tab-particulars');
+  const usersPanel = document.getElementById('maint-users-panel');
+  const partsPanel = document.getElementById('maint-particulars-panel');
+  
+  if (tab === 'users') {
+    usersBtn.style.background = '#cc0000';
+    usersBtn.style.color = '#fff';
+    partsBtn.style.background = '#fff';
+    partsBtn.style.border = '1px solid #ccc';
+    partsBtn.style.color = '#333';
+    usersPanel.style.display = 'block';
+    partsPanel.style.display = 'none';
+  } else {
+    partsBtn.style.background = '#cc0000';
+    partsBtn.style.color = '#fff';
+    usersBtn.style.background = '#fff';
+    usersBtn.style.border = '1px solid #ccc';
+    usersBtn.style.color = '#333';
+    usersPanel.style.display = 'none';
+    partsPanel.style.display = 'block';
+  }
+}
+
+// Load Users for Maintenance
+async function loadMaintUsers() {
+  const tbody = document.getElementById('maint-users-body');
+  tbody.innerHTML = '<tr><td colspan="5"><div class="loader"></div></td></tr>';
+  
+  try {
+    const res = await apiFetch('/get_users.php');
+    const users = res.data || [];
+    
+    // Also load particulars for the dropdown
+    const partsRes = await apiFetch('/get_particulars.php');
+    const particulars = partsRes.data || [];
+    
+    // Populate particular select in add form
+    const partSelect = document.getElementById('new-user-particular');
+    partSelect.innerHTML = '<option value="">— None —</option>';
+    particulars.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.particular_id;
+      opt.textContent = p.name;
+      partSelect.appendChild(opt);
+    });
+    
+    tbody.innerHTML = users.length ? users.map(u => {
+      const particular = particulars.find(p => p.particular_id == u.particular_id);
+      return `<tr>
+        <td>${escHtml(u.name || '')}</td>
+        <td>${escHtml(u.email || '')}</td>
+        <td>${escHtml(u.role || '')}</td>
+        <td>${particular ? escHtml(particular.name) : '—'}</td>
+        <td>
+          <button class="btn btn-ghost btn-xs" onclick="editUser(${u.id})">✏️</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteUser(${u.id})">🗑</button>
+        </td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="5" style="text-align:center;color:#888;">No users found.</td></tr>';
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#cc0000;">Failed to load users.</td></tr>';
+  }
+}
+
+// Load Particulars for Maintenance
+async function loadMaintParticulars() {
+  const tbody = document.getElementById('maint-particulars-body');
+  tbody.innerHTML = '<tr><td colspan="4"><div class="loader"></div></td></tr>';
+  
+  try {
+    const res = await apiFetch('/get_particulars.php');
+    const particulars = res.data || [];
+    
+    tbody.innerHTML = particulars.length ? particulars.map(p => `<tr>
+      <td>${p.particular_id}</td>
+      <td>${escHtml(p.name || '')}</td>
+      <td>${p.isActive ? '<span style="color:green;">Active</span>' : '<span style="color:#888;">Inactive</span>'}</td>
+      <td>
+        <button class="btn btn-ghost btn-xs" onclick="editParticular(${p.particular_id})">✏️</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteParticular(${p.particular_id})">🗑</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#888;">No particulars found.</td></tr>';
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#cc0000;">Failed to load particulars.</td></tr>';
+  }
+}
+
+// Show Add User Form
+function showAddUserForm() {
+  document.getElementById('add-user-form').style.display = 'block';
+  document.getElementById('new-user-name').value = '';
+  document.getElementById('new-user-email').value = '';
+  document.getElementById('new-user-role').value = 'staff';
+  document.getElementById('new-user-particular').value = '';
+}
+
+// Hide Add User Form
+function hideAddUserForm() {
+  document.getElementById('add-user-form').style.display = 'none';
+}
+
+// Save New User
+async function saveNewUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim();
+  const role = document.getElementById('new-user-role').value;
+  const particularId = document.getElementById('new-user-particular').value;
+  
+  if (!name || !email) {
+    toast('Please fill in name and email.', 'error');
+    return;
+  }
+  
+  try {
+    const res = await apiFetch('/create_user.php', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, role, particular_id: particularId || null })
+    });
+    
+    if (res.success) {
+      toast('User created successfully!', 'success');
+      hideAddUserForm();
+      loadMaintUsers();
+    } else {
+      toast(res.message || 'Failed to create user.', 'error');
+    }
+  } catch (e) {
+    toast('Failed to create user.', 'error');
+  }
+}
+
+// Edit User (placeholder - can be expanded)
+async function editUser(id) {
+  try {
+    const res = await apiFetch('/get_users_full.php');
+    const users = res.data || [];
+    const user = users.find(u => u.id === id);
+    if (user) {
+      openUserModal('edit', user.id, user.name, user.username || '', user.role, user.email || '');
+    }
+  } catch (e) {
+    toast('Failed to load user data.', 'error');
+  }
+}
+
+// Delete User
+async function deleteUser(id) {
+  if (!confirm('Are you sure you want to delete this user?')) return;
+  
+  try {
+    const res = await apiFetch(`/delete_user.php?id=${id}`, { method: 'GET' });
+    if (res.success) {
+      toast('User deleted.', 'success');
+      loadMaintUsers();
+    } else {
+      toast(res.message || 'Failed to delete user.', 'error');
+    }
+  } catch (e) {
+    toast('Failed to delete user.', 'error');
+  }
+}
+
+// Show Add Particular Form
+function showAddParticularForm() {
+  document.getElementById('add-particular-form').style.display = 'block';
+  document.getElementById('new-particular-name').value = '';
+}
+
+// Hide Add Particular Form
+function hideAddParticularForm() {
+  document.getElementById('add-particular-form').style.display = 'none';
+}
+
+// Save New Particular
+async function saveNewParticular() {
+  const name = document.getElementById('new-particular-name').value.trim();
+  
+  if (!name) {
+    toast('Please enter a particular name.', 'error');
+    return;
+  }
+  
+  try {
+    const res = await apiFetch('/create_particular.php', {
+      method: 'POST',
+      body: JSON.stringify({ name })
+    });
+    
+    if (res.success) {
+      toast('Particular created successfully!', 'success');
+      hideAddParticularForm();
+      loadMaintParticulars();
+    } else {
+      toast(res.message || 'Failed to create particular.', 'error');
+    }
+  } catch (e) {
+    toast('Failed to create particular.', 'error');
+  }
+}
+
+// Edit Particular
+async function editParticular(id) {
+  try {
+    const res = await apiFetch('/get_particulars.php');
+    const particulars = res.data || [];
+    const particular = particulars.find(p => p.particular_id === id);
+    if (particular) {
+      openParticularModal('edit', particular.particular_id, particular.name, particular.isActive);
+    }
+  } catch (e) {
+    toast('Failed to load particular data.', 'error');
+  }
+}
+
+// Delete Particular
+async function deleteParticular(id) {
+  if (!confirm('Are you sure you want to delete this particular?')) return;
+  
+  try {
+    const res = await apiFetch(`/delete_particular.php?id=${id}`, { method: 'GET' });
+    if (res.success) {
+      toast('Particular deleted.', 'success');
+      loadMaintParticulars();
+    } else {
+      toast(res.message || 'Failed to delete particular.', 'error');
+    }
+  } catch (e) {
+    toast('Failed to delete particular.', 'error');
+  }
+}
+
 </script>
+
 </body>
 </html>
