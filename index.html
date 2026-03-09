@@ -202,7 +202,11 @@ tbody td { padding: 11px 14px; color: var(--text-main); vertical-align: middle; 
 /* ===== MODAL ===== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
-.modal { background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius-lg); width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto; animation: slideUp 0.25s ease; }
+.modal { background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius-lg); width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto; animation: slideUp 0.25s ease; position: relative; }
+#maintenance-modal { scrollbar-width: thin; scrollbar-color: rgba(204,0,0,0.3) transparent; }
+#maintenance-modal::-webkit-scrollbar { width: 6px; }
+#maintenance-modal::-webkit-scrollbar-thumb { background: rgba(204,0,0,0.3); border-radius: 99px; }
+#employee-search-modal .modal { scrollbar-width: thin; }
 @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid #eee; display: flex; align-items: center; }
 .modal-title  { font-size: 14px; font-weight: 700; color: #cc0000; text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Roboto Mono', monospace; }
@@ -808,13 +812,13 @@ select.form-control option { background: #ffffff; color: #333333; }
 </div>
 
 <!-- ===== MAINTENANCE MODAL ===== -->
-<div class="modal-overlay" id="maintenance-modal">
-  <div class="modal" style="width:860px;max-height:92vh;display:flex;flex-direction:column;">
+<div class="modal-overlay" id="maintenance-modal" style="align-items:flex-start;padding:24px 0;overflow-y:auto;">
+  <div class="modal" style="width:860px;max-width:95vw;max-height:none;display:flex;flex-direction:column;overflow:visible;margin:auto;">
     <div class="modal-header">
       <div class="modal-title">⚙️ Maintenance</div>
       <button class="modal-close" onclick="closeModal('maintenance-modal')">✕</button>
     </div>
-    <div class="modal-body" style="padding:20px 24px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
+    <div class="modal-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
 
       <input type="hidden" id="umaint-id" />
       <input type="hidden" id="umaint-particular-id" />
@@ -981,7 +985,7 @@ select.form-control option { background: #ffffff; color: #333333; }
 
 <!-- ===== EMPLOYEE SEARCH MODAL ===== -->
 <div class="modal-overlay" id="employee-search-modal" style="z-index:400;">
-  <div class="modal" style="width:820px;max-height:85vh;display:flex;flex-direction:column;">
+  <div class="modal" style="width:820px;max-width:95vw;height:80vh;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
     <div class="modal-header" style="background:#1a3a4a;border-radius:10px 10px 0 0;">
       <div class="modal-title" style="color:#7ecfff;font-size:13px;">🔍 SEARCH [ EMPLOYEE ]</div>
       <button class="modal-close" onclick="closeModal('employee-search-modal')" style="color:#7ecfff;">✕</button>
@@ -994,7 +998,7 @@ select.form-control option { background: #ffffff; color: #333333; }
           oninput="filterEmployeeList()" />
       </div>
     </div>
-    <div style="flex:1;overflow-y:auto;background:#fff;">
+    <div style="flex:1;overflow-y:auto;background:#fff;min-height:0;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead>
           <tr style="background:#1a3a4a;position:sticky;top:0;">
