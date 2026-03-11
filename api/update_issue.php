@@ -7,7 +7,6 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit(); }
 require_once '../config/database.php';
 
-// ID comes from ?id=X query param (works with both POST and PUT)
 $id   = $_GET['id'] ?? null;
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);
@@ -21,13 +20,11 @@ try {
     $fields = [];
     $params = [':id' => $id];
 
-    // Original fields
     if (isset($data['state']))  { $fields[] = 'state = :state';   $params[':state']  = $data['state']; }
     if (isset($data['status'])) { $fields[] = 'status = :status'; $params[':status'] = $data['status']; }
     if (isset($data['priority']))       { $fields[] = "priority = :priority";             $params[':priority']      = $data['priority']; }
     if (isset($data['assignedTo']))     { $fields[] = "assigned_to = :assignedTo";        $params[':assignedTo']    = $data['assignedTo'] ?: null; }
 
-    // New PDF-aligned fields
     if (isset($data['title']))               { $fields[] = "title = :title";                           $params[':title']              = $data['title']; }
     if (isset($data['storyPoints']))         { $fields[] = "story_points = :storyPoints";              $params[':storyPoints']        = $data['storyPoints'] ?: null; }
     if (isset($data['areaPath']))            { $fields[] = "area_path = :areaPath";                    $params[':areaPath']           = $data['areaPath']; }

@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit();
 require_once '../config/database.php';
 
 $id   = $_GET['id']   ?? null;
-$view = $_GET['view'] ?? '0';   // ?view=1 = inline, omit = force download
+$view = $_GET['view'] ?? '0';
 
 if (!$id) {
     http_response_code(400);
@@ -36,7 +36,6 @@ try {
     $mimeType     = $file['file_type'] ?? mime_content_type($filePath);
     $originalName = $file['original_name'] ?? basename($filePath);
 
-    // Viewable inline types — images, PDF, plain text
     $inlineTypes = [
         'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
         'application/pdf',
@@ -49,10 +48,8 @@ try {
     header('Content-Length: ' . filesize($filePath));
 
     if ($view === '1' && $isViewable) {
-        // Open inline in browser tab
         header('Content-Disposition: inline; filename="' . $originalName . '"');
     } else {
-        // Force download
         header('Content-Disposition: attachment; filename="' . $originalName . '"');
     }
 

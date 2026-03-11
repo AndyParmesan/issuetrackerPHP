@@ -15,14 +15,13 @@ try {
         exit;
     }
 
-    // Password comes in already MD5-hashed from the frontend
     $stmt = $pdo->prepare("SELECT id, name, username, role 
                            FROM users 
                            WHERE username = :username 
                            AND password = :password");
     $stmt->execute([
         ':username' => $data['username'],
-        ':password' => $data['password']   // already MD5 hashed
+        ':password' => $data['password']
     ]);
 
     $user = $stmt->fetch();

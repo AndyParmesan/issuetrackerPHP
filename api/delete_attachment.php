@@ -14,7 +14,6 @@ if (!$issueId || !$attachmentId) {
 }
 
 try {
-    // Fetch the file info so we can delete the physical file too
     $stmt = $pdo->prepare("SELECT * FROM attachments WHERE id = :id AND issue_id = :issueId");
     $stmt->execute([':id' => $attachmentId, ':issueId' => $issueId]);
     $file = $stmt->fetch();
@@ -24,13 +23,11 @@ try {
         exit;
     }
 
-    // Delete the physical file from disk
     $filePath = '../uploads/' . $file['filename'];
     if (file_exists($filePath)) {
         unlink($filePath);
     }
 
-    // Delete the DB record
     $del = $pdo->prepare("DELETE FROM attachments WHERE id = :id");
     $del->execute([':id' => $attachmentId]);
 

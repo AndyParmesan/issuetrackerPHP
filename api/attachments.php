@@ -1,5 +1,4 @@
 <?php
-// api/attachments.php
 require_once '../config/database.php';
 
 $issueId = $_GET['issueId'] ?? null;
@@ -12,7 +11,6 @@ try {
         echo json_encode(["success" => true, "data" => $stmt->fetchAll()]);
 
     } elseif ($method === 'POST' && $issueId) {
-        // 1. Check 5-file limit (Conversion of AttachmentService logic)
         $count = $pdo->prepare("SELECT COUNT(*) FROM attachments WHERE issue_id = :id");
         $count->execute([':id' => $issueId]);
         if ($count->fetchColumn() >= 5) {
@@ -20,10 +18,9 @@ try {
             exit;
         }
 
-        // 2. Handle File Upload
         $file = $_FILES['file'];
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $uniqueName = uniqid() . '.' . $ext; // PHP version of GUID
+        $uniqueName = uniqid() . '.' . $ext;
         $targetPath = "../uploads/" . $uniqueName;
 
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {

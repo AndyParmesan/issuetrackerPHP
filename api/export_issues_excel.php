@@ -48,12 +48,10 @@ try {
     $stmt->execute($params);
     $issues = $stmt->fetchAll();
 
-    // ── Build spreadsheet ──────────────────────────────────────
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle('Issues');
 
-    // ── Header row styling ─────────────────────────────────────
     $headers = [
         'A' => 'ID',
         'B' => 'Dashboard',
@@ -76,7 +74,6 @@ try {
         $sheet->setCellValue($col . '1', $label);
     }
 
-    // Header style — red background, white bold text
     $headerStyle = [
         'font'      => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
         'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'CC0000']],
@@ -86,7 +83,6 @@ try {
     $sheet->getStyle('A1:O1')->applyFromArray($headerStyle);
     $sheet->getRowDimension(1)->setRowHeight(22);
 
-    // ── Data rows ──────────────────────────────────────────────
     $row = 2;
     foreach ($issues as $i) {
         $sheet->setCellValue('A' . $row, $i['id']);
@@ -105,7 +101,6 @@ try {
         $sheet->setCellValue('N' . $row, $i['source']           ?? '');
         $sheet->setCellValue('O' . $row, $i['created_at']       ?? '');
 
-        // Alternate row shading
         if ($row % 2 === 0) {
             $sheet->getStyle("A{$row}:O{$row}")->applyFromArray([
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFF5F5']],
@@ -120,20 +115,15 @@ try {
         $row++;
     }
 
-    // ── Column widths ──────────────────────────────────────────
     $widths = ['A'=>6,'B'=>12,'C'=>12,'D'=>45,'E'=>14,'F'=>14,'G'=>12,
                'H'=>10,'I'=>12,'J'=>14,'K'=>16,'L'=>16,'M'=>16,'N'=>12,'O'=>18];
     foreach ($widths as $col => $w) {
         $sheet->getColumnDimension($col)->setWidth($w);
     }
 
-    // Wrap description column
     $sheet->getStyle('D2:D' . ($row - 1))->getAlignment()->setWrapText(true);
-
-    // Freeze header row
     $sheet->freezePane('A2');
 
-    // ── Output ─────────────────────────────────────────────────
     $filename = 'IssueTracker_Export_' . date('Y-m-d') . '.xlsx';
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
