@@ -1,6 +1,6 @@
 <?php
-error_reporting(0);
-ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -23,7 +23,7 @@ try {
             VALUES 
                 (:title, :dashboard, :particularId, :module, :description, :state, :status, :priority,
                  :storyPoints, :areaPath, :iterationPath, :acceptanceCriteria,
-                 :issuedBy, :assignedTo, :dateIdentified, 'Manual')";
+                 :issuedBy, :assignedTo, :dateIdentified, :source)";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -33,7 +33,7 @@ try {
         ':module'              => $data['module']             ?? null,
         ':description'         => $data['description'],
         ':state'               => $data['state']              ?? 'New',
-        ':status'              => 'In Progress',
+        ':status'              => $data['status'] ?? 'New',
         ':priority'            => $data['priority']           ?? '4-Medium',
         ':storyPoints'         => $data['storyPoints']        ?? null,
         ':areaPath'            => $data['areaPath']           ?? null,
@@ -42,6 +42,7 @@ try {
         ':issuedBy'            => $data['issuedBy']           ?? null,
         ':assignedTo'          => $data['assignedTo']         ?? null,
         ':dateIdentified'      => $data['dateIdentified']     ?? date('Y-m-d'),
+        ':source'              => $data['source']             ?? 'Manual',
     ]);
 
     $newId = $pdo->lastInsertId();

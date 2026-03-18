@@ -18,18 +18,21 @@ if (!$data) {
 
 $issueId = $data['issueId'] ?? null;
 $comment = trim($data['comment'] ?? '');
-$userId  = $data['userId']  ?? null;
-$author  = $data['author']  ?? null;
+$userId  = $data['userId']  ?? null;    // numeric user ID (preferred)
+$author  = $data['author']  ?? null;    // fallback display name
 
 if (!$issueId || empty($comment)) {
     die(json_encode(["success" => false, "message" => "issueId and comment are required."]));
 }
 
+// If userId provided as name string (legacy), resolve to ID
 if ($userId && !is_numeric($userId)) {
+    // It was passed as a name — store as author instead
     $author = $userId;
     $userId = null;
 }
 
+// If userId numeric, look up the name for the author field
 if ($userId && is_numeric($userId)) {
     try {
         $uStmt = $pdo->prepare("SELECT name FROM users WHERE id = :id");
@@ -37,6 +40,7 @@ if ($userId && is_numeric($userId)) {
         $user = $uStmt->fetch();
         if ($user) $author = $user['name'];
     } catch (Exception $e) {
+        // Non-fatal
     }
 }
 

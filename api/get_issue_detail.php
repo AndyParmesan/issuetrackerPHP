@@ -27,6 +27,7 @@ try {
     $issue = $stmt->fetch();
 
     if ($issue) {
+        // Normalize camelCase aliases for frontend compatibility
         $issue['issuedByName']   = $issue['issued_by_name'];
         $issue['assignedToName'] = $issue['assigned_to_name'];
         $issue['dateIdentified'] = $issue['date_identified'];
