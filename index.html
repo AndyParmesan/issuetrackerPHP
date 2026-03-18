@@ -929,11 +929,11 @@ select.form-control option { background: #ffffff; color: #333333; }
         <div style="display:flex;border-bottom:2px solid #f0f0f0;background:#f8f8f8;">
           <button id="maint-tab-users" onclick="switchMaintTab('users')"
             style="padding:10px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Roboto Mono',monospace;border:none;border-bottom:3px solid #cc0000;margin-bottom:-2px;background:transparent;cursor:pointer;color:#cc0000;display:flex;align-items:center;gap:6px;">
-            USERS <span id="users-count" style="font-size:10px;color:#aaa;font-weight:400;"></span>
+            USERS <span id="users-count" style="font-size:10px;font-weight:700;background:rgba(204,0,0,0.12);color:#cc0000;padding:1px 7px;border-radius:20px;font-family:'Roboto Mono',monospace;"></span>
           </button>
           <button id="maint-tab-particulars" onclick="switchMaintTab('particulars')"
             style="padding:10px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Roboto Mono',monospace;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:transparent;cursor:pointer;color:#aaa;display:flex;align-items:center;gap:6px;">
-            PARTICULARS
+            PARTICULARS <span id="particulars-count" style="font-size:10px;font-weight:700;background:rgba(100,100,200,0.12);color:#4a64ce;padding:1px 7px;border-radius:20px;font-family:'Roboto Mono',monospace;"></span>
           </button>
           <div style="margin-left:auto;padding:6px 12px;display:none;" id="maint-add-particular-btn">
             <button onclick="openParticularModal('add')" style="padding:5px 14px;background:#cc0000;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Raleway',sans-serif;">➕ Add</button>
@@ -1866,8 +1866,10 @@ function switchMaintTab(tab) {
 
 // ── PARTICULARS CRUD ──────────────────────────────────────────
 let _allParticularsCache = [];
-let _particularsPage = 1;
-const PARTS_PER_PAGE = 5;
+_particularsPage = 1;
+renderParticularsList();
+const pcnt = document.getElementById('particulars-count');
+if (pcnt) pcnt.textContent = _allParticularsCache.length;
 
 async function loadParticulars() {
   const tbody = document.getElementById('particular-tbody');
@@ -1981,7 +1983,7 @@ async function loadMaintUsers() {
     _allUsersCache = res.data || [];
     renderUserList(_allUsersCache);
     const cnt = document.getElementById('users-count');
-    if (cnt) cnt.textContent = _allUsersCache.length + ' user' + (_allUsersCache.length !== 1 ? 's' : '');
+    if (cnt) cnt.textContent = _allUsersCache.length;
   } catch {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#cc0000;">Failed to load users.</td></tr>';
   }
@@ -2987,10 +2989,9 @@ async function generateReport() {
     document.getElementById('report-grid').innerHTML = [
       ['Total Issues',r.totalIssues,],['New',r.newCount,],['Bugs',r.bugCount,],
       ['Open',r.openCount,],['In Progress',r.inProgressCount,],['Resolved',r.resolvedCount,]
-    ].map(([label,val,icon]) => `
+      ].map(([label, val]) => `
       <div class="report-stat-box">
-        <div><div class="rs-label">${label}</div><div class="rs-val">${val}</div></div>
-        <div style="font-size:28px;opacity:0.3;">${icon}</div>
+      <div><div class="rs-label">${label}</div><div class="rs-val">${val}</div></div>
       </div>`).join('');
 
     document.getElementById('latest-report-section').style.display = '';

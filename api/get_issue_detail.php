@@ -1,4 +1,6 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -16,10 +18,12 @@ try {
     $sql = "SELECT 
                 i.*,
                 u1.name AS issued_by_name,
-                u2.name AS assigned_to_name
+                u2.name AS assigned_to_name,
+                p.name  AS particular_name
             FROM issues i
-            LEFT JOIN users u1 ON i.issued_by    = u1.id
-            LEFT JOIN users u2 ON i.assigned_to  = u2.id
+            LEFT JOIN users u1      ON i.issued_by     = u1.id
+            LEFT JOIN users u2      ON i.assigned_to   = u2.id
+            LEFT JOIN particulars p ON i.particular_id = p.particular_id
             WHERE i.id = :id";
 
     $stmt = $pdo->prepare($sql);
@@ -36,6 +40,7 @@ try {
         $issue['areaPath']       = $issue['area_path'];
         $issue['iterationPath']  = $issue['iteration_path'];
         $issue['acceptanceCriteria'] = $issue['acceptance_criteria'];
+        $issue['particularName']     = $issue['particular_name'];
 
         echo json_encode(["success" => true, "data" => $issue]);
     } else {
