@@ -241,8 +241,8 @@ select.form-control option { background: #ffffff; color: #333333; }
 .detail-panel { display: grid; grid-template-columns: 1fr; gap: 20px; }
 .detail-meta  { display: flex; flex-direction: column; gap: 10px; }
 .meta-row { display: flex; align-items: flex-start; gap: 10px; }
-.meta-key { font-size: 17px; font-weight: 600; letter-spacing: 0.08em; color: var(--text-dim); text-transform: uppercase; font-family: 'Roboto Mono', monospace; min-width: 110px; padding-top: 2px; }
-.meta-val { color: var(--text-bright); font-size: 19px; }
+.meta-key { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; color: #888; text-transform: uppercase; font-family: 'Roboto Mono', monospace; min-width: 110px; padding-top: 3px; }
+.meta-val { color: #1a1a1a; font-size: 13px; font-weight: 500; }
 
 /* ===== COMMENTS ===== */
 .comments-section { display: flex; flex-direction: column; gap: 10px; }
@@ -331,7 +331,14 @@ select.form-control option { background: #ffffff; color: #333333; }
   </div>
   <div class="sidebar-nav">
     <div class="nav-section-label">Main</div>
-    <a class="nav-item active" data-view="dashboard"><span class="icon"></span> Dashboard</a>
+    <div class="nav-item" id="nav-dashboard-parent" onclick="toggleDashboardDropdown()" style="cursor:pointer;justify-content:space-between;">
+      <span style="display:flex;align-items:center;gap:10px;"><span class="icon"></span> Dashboard</span>
+      <span id="dashboard-chevron" style="font-size:11px;transition:transform .2s;">▾</span>
+    </div>
+    <div id="dashboard-dropdown" style="display:flex;flex-direction:column;gap:2px;padding-left:16px;">
+      <a class="nav-item active" id="nav-dashboard-items" onclick="navigateDashboard('items')" style="cursor:pointer;font-size:11.5px;opacity:0.85;padding-top:6px;padding-bottom:6px;">Items</a>
+      <a class="nav-item" id="nav-dashboard-stories" onclick="navigateDashboard('stories')" style="cursor:pointer;font-size:11.5px;opacity:0.85;padding-top:6px;padding-bottom:6px;">User Stories</a>
+    </div>
     <a class="nav-item" data-view="issues"><span class="icon"></span> All Items <span class="nav-badge" id="badge-open">–</span></a>
     <div class="nav-section-label">Management</div>
     <a class="nav-item" id="nav-new-issue" data-view="new-issue"><span class="icon"></span> New Item</a>
@@ -375,33 +382,66 @@ select.form-control option { background: #ffffff; color: #333333; }
   <div id="content">
 
     <!-- ===== DASHBOARD ===== -->
-    <div class="view active" id="view-dashboard">
-      <div class="stat-row" id="stat-row">
-        <div class="stat-card c-total"><div class="stat-label">Total</div><div class="stat-value" id="s-total"></div><div class="stat-icon"></div></div>
-        <div class="stat-card c-new"><div class="stat-label">New</div><div class="stat-value" id="s-new"></div><div class="stat-icon"></div></div>
-        <div class="stat-card c-draft"><div class="stat-label">Draft</div><div class="stat-value" id="s-draft"></div><div class="stat-icon"></div></div>
-        <div class="stat-card c-bug"><div class="stat-label">Bugs/Failed</div><div class="stat-value" id="s-bug"></div><div class="stat-icon"></div></div>
-        <div class="stat-card c-open"><div class="stat-label">Open</div><div class="stat-value" id="s-open"></div><div class="stat-icon"></div></div>
-        <div class="stat-card c-prog"><div class="stat-label">In Progress</div><div class="stat-value" id="s-prog"></div><div class="stat-icon"></div></div>
-        <div class="stat-card c-res"><div class="stat-label">Closed</div><div class="stat-value" id="s-res"></div><div class="stat-icon"></div></div>
+    <!-- ===== DASHBOARD: ITEMS ===== -->
+    <div class="view active" id="view-dashboard-items">
+      <div class="stat-row">
+        <div class="stat-card c-total"><div class="stat-label">Total Items</div><div class="stat-value" id="si-total">–</div></div>
+        <div class="stat-card c-new"><div class="stat-label">New</div><div class="stat-value" id="si-new">–</div></div>
+        <div class="stat-card c-bug"><div class="stat-label">Bugs</div><div class="stat-value" id="si-bug">–</div></div>
+        <div class="stat-card c-open"><div class="stat-label">Open</div><div class="stat-value" id="si-open">–</div></div>
+        <div class="stat-card c-prog"><div class="stat-label">In Progress</div><div class="stat-value" id="si-prog">–</div></div>
+        <div class="stat-card c-res"><div class="stat-label">Closed</div><div class="stat-value" id="si-closed">–</div></div>
       </div>
       <div class="charts-row" style="grid-template-columns:1fr;">
         <div class="card">
-          <div class="card-header"><div class="card-title">Issues by Priority</div></div>
-          <div class="card-body"><div class="chart-container"><canvas id="chart-priority"></canvas></div></div>
+          <div class="card-header"><div class="card-title">Items by Priority</div></div>
+          <div class="card-body"><div class="chart-container"><canvas id="chart-items-priority"></canvas></div></div>
         </div>
       </div>
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Recent Issues</div>
+          <div class="card-title">Recent Items</div>
           <div class="sep"></div>
           <button class="btn btn-ghost btn-sm" onclick="navigate('issues')">View All →</button>
         </div>
         <div class="card-body" style="padding:0">
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>#</th><th>Dashboard</th><th>Description</th><th>State</th><th>Priority</th><th>Points</th><th>Created By</th><th>Date</th><th></th></tr></thead>
-              <tbody id="recent-issues-body"><tr><td colspan="8"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody>
+              <thead><tr><th>#</th><th>Particular</th><th>Module</th><th>Description</th><th>State</th><th>Status</th><th>Priority</th><th>Created By</th><th>Date</th><th></th></tr></thead>
+              <tbody id="recent-items-body"><tr><td colspan="10"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DASHBOARD: USER STORIES ===== -->
+    <div class="view" id="view-dashboard-stories">
+      <div class="stat-row">
+        <div class="stat-card c-total"><div class="stat-label">Total Stories</div><div class="stat-value" id="ss-total">–</div></div>
+        <div class="stat-card c-draft"><div class="stat-label">Draft</div><div class="stat-value" id="ss-draft">–</div></div>
+        <div class="stat-card c-forreview"><div class="stat-label" style="font-size:9px;">For Review</div><div class="stat-value" id="ss-review">–</div></div>
+        <div class="stat-card c-prog"><div class="stat-label">In Development</div><div class="stat-value" id="ss-indev">–</div></div>
+        <div class="stat-card c-fortesting"><div class="stat-label">For Testing</div><div class="stat-value" id="ss-testing">–</div></div>
+        <div class="stat-card c-res"><div class="stat-label">Closed</div><div class="stat-value" id="ss-closed">–</div></div>
+      </div>
+      <div class="charts-row" style="grid-template-columns:1fr;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Stories by Priority</div></div>
+          <div class="card-body"><div class="chart-container"><canvas id="chart-stories-priority"></canvas></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent User Stories</div>
+          <div class="sep"></div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('issues')">View All →</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>#</th><th>Title</th><th>Particular</th><th>State</th><th>Priority</th><th>Points</th><th>Sprint</th><th>Assigned To</th><th>Date</th><th></th></tr></thead>
+              <tbody id="recent-stories-body"><tr><td colspan="10"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody>
             </table>
           </div>
         </div>
@@ -412,7 +452,7 @@ select.form-control option { background: #ffffff; color: #333333; }
     <div class="view" id="view-issues">
       <div class="card">
         <div class="card-header">
-          <div class="card-title" id="all-items-title">ALL ITEMS & USER STORY</div>
+          <div class="card-title">All Items</div>
           <div class="sep"></div>
           <div class="filter-bar">
             <select class="filter-select" id="filter-particular" onchange="loadIssues()">
@@ -440,7 +480,7 @@ select.form-control option { background: #ffffff; color: #333333; }
             <select id="filter-mine-btn" class="filter-select" onchange="toggleMineFilter(this.value)" style="white-space:nowrap;">
               <option value="all">All</option>
               <option value="item">My Items</option>
-              <option value="story">My User Story</option>
+              <option value="story">My Story</option>
             </select>
             <button class="btn btn-ghost btn-sm" onclick="exportIssues()">⬇ Export XLSX</button>
           </div>
@@ -465,7 +505,7 @@ select.form-control option { background: #ffffff; color: #333333; }
 
             <div class="form-row">
               <div class="form-group">
-                <label>Particular</label>
+                <label>Particular <span style="color:#cc0000">*</span></label>
                 <select class="form-control" id="ni-particular">
                   <option value="">— Select Particular —</option>
                 </select>
@@ -932,13 +972,13 @@ select.form-control option { background: #ffffff; color: #333333; }
         <!-- TAB HEADERS -->
         <div style="display:flex;border-bottom:2px solid #f0f0f0;background:#f8f8f8;">
           <button id="maint-tab-users" onclick="switchMaintTab('users')"
-          style="padding:10px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Roboto Mono',monospace;border:none;border-bottom:3px solid #cc0000;margin-bottom:-2px;background:transparent;cursor:pointer;color:#cc0000;display:flex;align-items:center;gap:6px;">
-          USERS <span id="users-count" style="font-size:10px;font-weight:700;background:rgba(204,0,0,0.12);color:#cc0000;padding:1px 7px;border-radius:20px;font-family:'Roboto Mono',monospace;"></span>
-        </button>
-        <button id="maint-tab-particulars" onclick="switchMaintTab('particulars')"
-          style="padding:10px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Roboto Mono',monospace;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:transparent;cursor:pointer;color:#aaa;display:flex;align-items:center;gap:6px;">
-          PARTICULARS <span id="particulars-count" style="font-size:10px;font-weight:700;background:rgba(100,100,200,0.12);color:#4a64ce;padding:1px 7px;border-radius:20px;font-family:'Roboto Mono',monospace;"></span>
-        </button>
+            style="padding:10px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Roboto Mono',monospace;border:none;border-bottom:3px solid #cc0000;margin-bottom:-2px;background:transparent;cursor:pointer;color:#cc0000;display:flex;align-items:center;gap:6px;">
+            USERS <span id="users-count" style="font-size:10px;color:#aaa;font-weight:400;"></span>
+          </button>
+          <button id="maint-tab-particulars" onclick="switchMaintTab('particulars')"
+            style="padding:10px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-family:'Roboto Mono',monospace;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:transparent;cursor:pointer;color:#aaa;display:flex;align-items:center;gap:6px;">
+            PARTICULARS
+          </button>
           <div style="margin-left:auto;padding:6px 12px;display:none;" id="maint-add-particular-btn">
             <button onclick="openParticularModal('add')" style="padding:5px 14px;background:#cc0000;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Raleway',sans-serif;">➕ Add</button>
           </div>
@@ -973,12 +1013,13 @@ select.form-control option { background: #ffffff; color: #333333; }
               <tr style="background:#f0f0f0;">
                 <th style="padding:7px 10px;text-align:left;color:#666;font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.06em;width:50px;">ID</th>
                 <th style="padding:7px 10px;text-align:left;color:#666;font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.06em;">NAME</th>
+                <th style="padding:7px 10px;text-align:left;color:#666;font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.06em;">DESCRIPTION</th>
                 <th style="padding:7px 10px;text-align:left;color:#666;font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.06em;width:100px;">STATUS</th>
                 <th style="padding:7px 10px;text-align:center;color:#666;font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:.06em;width:130px;">ACTIONS</th>
               </tr>
             </thead>
             <tbody id="particular-tbody">
-              <tr><td colspan="4" style="text-align:center;padding:24px;"><div class="loader"></div></td></tr>
+              <tr><td colspan="5" style="text-align:center;padding:24px;"><div class="loader"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -1002,6 +1043,10 @@ select.form-control option { background: #ffffff; color: #333333; }
       <div class="form-group">
         <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Particular Name <span style="color:#cc0000">*</span></label>
         <input type="text" class="form-control" id="part-name" placeholder="e.g. MCC, SEC, Inventory…" style="margin-top:6px;" />
+      </div>
+      <div class="form-group">
+        <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Description / Platform</label>
+        <input type="text" class="form-control" id="part-description" placeholder="e.g. PC-Based, Web-Based…" style="margin-top:6px;" />
       </div>
       <div class="form-group">
         <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Status</label>
@@ -1074,16 +1119,16 @@ select.form-control option { background: #ffffff; color: #333333; }
 
 <!-- ===== ISSUE DETAIL MODAL ===== -->
 <div class="modal-overlay" id="issue-detail-modal">
-  <div class="modal" style="width:100vw;height:100vh;max-width:100%;margin:0;border-radius:0;overflow:hidden;display:flex;flex-direction:column;">
-    <div class="modal-header" style="flex-shrink:0;">
+  <div class="modal" style="width:100vw;height:100vh;max-width:100%;margin:0;border-radius:0;overflow-y:auto;">
+    <div class="modal-header">
       <div class="modal-title">Issue / User Story Detail</div>
             <button class="btn btn-ghost btn-sm" onclick="openActivityHistory()" style="font-size:11px;margin-left:8px;color:#cc0000;">Activity History</button>
       <button class="modal-close" onclick="closeModal('issue-detail-modal')">✕</button>
     </div>
-    <div class="modal-body" id="issue-detail-body" style="flex:1;overflow-y:auto;min-height:0;">
+    <div class="modal-body" id="issue-detail-body">
       <div class="empty-state"><div class="loader"></div></div>
     </div>
-    <div class="modal-footer" style="flex-shrink:0;border-top:1px solid #eee;padding:16px 24px;display:flex;gap:10px;justify-content:flex-end;background:#fff;">
+    <div class="modal-footer">
       <button class="btn btn-danger btn-sm" id="delete-issue-btn">🗑 Delete</button>
       <button class="btn btn-ghost btn-sm" onclick="closeModal('issue-detail-modal')">Close</button>
       <button class="btn btn-primary btn-sm" id="edit-issue-btn">✏ Edit</button>
@@ -1095,23 +1140,18 @@ select.form-control option { background: #ffffff; color: #333333; }
 <div class="modal-overlay" id="edit-issue-modal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Update Issue</div>
+      <div class="modal-title" id="edit-modal-title">Update Issue</div>
       <button class="modal-close" onclick="closeModal('edit-issue-modal')">✕</button>
     </div>
     <div class="modal-body">
+      <!-- COMMON FIELDS (both ITEM and STORY) -->
       <div class="form-row">
         <div class="form-group">
-          <label>Title</label>
-          <input type="text" id="edit-title" placeholder="Short title for this issue" />
-        </div>
-        <div class="form-group">
-          <label>Particular</label>
+          <label>Particular <span style="color:#cc0000">*</span></label>
           <select class="form-control" id="edit-particular">
             <option value="">— Select Particular —</option>
           </select>
         </div>
-      </div>
-      <div class="form-row">
         <div class="form-group">
           <label>Module</label>
           <input type="text" id="edit-module" placeholder="e.g. Login, Reports, Users…" />
@@ -1123,28 +1163,9 @@ select.form-control option { background: #ffffff; color: #333333; }
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Status <span style="font-size:9px;color:#aaa;font-weight:400;text-transform:none;">— Progress of this issue</span></label>
-          <select class="form-control" id="edit-state">
-            <option value="In Progress">In Progress — Being worked on</option>
-            <option value="Fixed">Fixed — Dev complete, pending verification</option>
-            <option value="Resolved">Resolved — Confirmed fixed and closed</option>
-          </select>
-        </div>
-        <div class="form-group">
           <label>Priority</label>
           <select class="form-control" id="edit-priority">
             <option>1-Urgent</option><option>2-Critical</option><option>3-High</option><option>4-Medium</option><option>5-Low</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Story Points</label>
-          <select class="form-control" id="edit-story-points">
-            <option value="">— None —</option>
-            <option value="1">1 (1–2 hrs)</option><option value="2">2 (3–4 hrs)</option>
-            <option value="3">3 (5–8 hrs)</option><option value="5">5 (8–16 hrs)</option>
-            <option value="8">8 (24–32 hrs)</option><option value="13">13 (40–56 hrs)</option>
           </select>
         </div>
         <div class="form-group">
@@ -1154,28 +1175,72 @@ select.form-control option { background: #ffffff; color: #333333; }
           </select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Iteration Path (Sprint)</label>
-          <select class="form-control" id="edit-iteration-path">
-            <option value="">— Select Sprint —</option>
-            <option value="Sprint 1">Sprint 1</option>
-            <option value="Sprint 2">Sprint 2</option>
-            <option value="Sprint 3">Sprint 3</option>
-            <option value="Sprint 4">Sprint 4</option>
-            <option value="Sprint 5">Sprint 5</option>
-            <option value="Sprint 6">Sprint 6</option>
-            <option value="Sprint 7">Sprint 7</option>
-            <option value="Sprint 8">Sprint 8</option>
-            <option value="Sprint 9">Sprint 9</option>
-            <option value="Sprint 10">Sprint 10</option>
-          </select>
+
+      <!-- ITEM-ONLY FIELDS -->
+      <div id="edit-item-fields">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status <span style="font-size:9px;color:#aaa;font-weight:400;text-transform:none;">— Progress of this issue</span></label>
+            <select class="form-control" id="edit-state">
+              <option value="In Progress">In Progress — Being worked on</option>
+              <option value="Fixed">Fixed — Dev complete, pending verification</option>
+              <option value="Closed">Closed — Confirmed fixed and closed</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <label>Acceptance Criteria</label>
-        <textarea id="edit-acceptance-criteria" rows="4" placeholder="Conditions for story completion…"></textarea>
+
+      <!-- STORY-ONLY FIELDS -->
+      <div id="edit-story-fields" style="display:none;">
+        <div class="form-group">
+          <label>Title <span style="color:#cc0000">*</span></label>
+          <input type="text" id="edit-title" placeholder="Short title for this story" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Story Points</label>
+            <select class="form-control" id="edit-story-points">
+              <option value="">— None —</option>
+              <option value="1">1 (1–2 hrs)</option><option value="2">2 (3–4 hrs)</option>
+              <option value="3">3 (5–8 hrs)</option><option value="5">5 (8–16 hrs)</option>
+              <option value="8">8 (24–32 hrs)</option><option value="13">13 (40–56 hrs)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sprint</label>
+            <select class="form-control" id="edit-iteration-path">
+              <option value="">— Select Sprint —</option>
+              <option value="Sprint 1">Sprint 1</option><option value="Sprint 2">Sprint 2</option>
+              <option value="Sprint 3">Sprint 3</option><option value="Sprint 4">Sprint 4</option>
+              <option value="Sprint 5">Sprint 5</option><option value="Sprint 6">Sprint 6</option>
+              <option value="Sprint 7">Sprint 7</option><option value="Sprint 8">Sprint 8</option>
+              <option value="Sprint 9">Sprint 9</option><option value="Sprint 10">Sprint 10</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>State</label>
+            <select class="form-control" id="edit-story-state">
+              <option value="Draft">Draft</option>
+              <option value="For Review">For Review</option>
+              <option value="Approved">Approved</option>
+              <option value="In Development">In Development</option>
+              <option value="For Testing">For Testing</option>
+              <option value="QA Failed">QA Failed</option>
+              <option value="For UAT">For UAT</option>
+              <option value="Ready for Deployment">Ready for Deployment</option>
+              <option value="Deployed">Deployed</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Acceptance Criteria</label>
+          <textarea id="edit-acceptance-criteria" rows="4" placeholder="Conditions for story completion…"></textarea>
+        </div>
       </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('edit-issue-modal')">Cancel</button>
@@ -1283,9 +1348,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const navImport = document.getElementById('nav-import');
   if (navImport) navImport.style.display = (role === 'admin') ? '' : 'none';
 
-  // Reports: visible to admin and reporter (not developer/staff)
+  // Reports: admin and developer only (not reporters)
   const navReports = document.getElementById('nav-reports');
-  if (navReports) navReports.style.display = (role === 'admin' || role === 'reporter') ? '' : 'none';
+  if (navReports) navReports.style.display = (role === 'reporter') ? 'none' : '';
 
   // Hide Management section label if developer has nothing under it
   if (role === 'developer') {
@@ -1295,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   loadUsers();
-  loadDashboard();
+  navigateDashboard('items');
   setTodayDate();
 
   document.querySelectorAll('.nav-item[data-view]').forEach(item => {
@@ -1324,11 +1389,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // NAVIGATION
 // ============================================================
 function navigate(view) {
+  if (view === 'dashboard') { navigateDashboard(currentDashboardType || 'items'); return; }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  // Remove dashboard parent active too
+  const dbParent = document.getElementById('nav-dashboard-parent');
+  if (dbParent) dbParent.classList.remove('active');
   document.getElementById(`view-${view}`)?.classList.add('active');
   document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
-  const titles = { dashboard:'Dashboard', issues:'All Items', 'new-issue':'Log New Item', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports' };
+  const titles = { 'dashboard-items':'Dashboard — Items', 'dashboard-stories':'Dashboard — User Stories', issues:'All Items', 'new-issue':'Log New Item', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports' };
   document.getElementById('topbar-title').textContent = titles[view] || view;
   // Show search bar only on All Items
   const searchBar = document.getElementById('topbar-search');
@@ -1514,33 +1583,83 @@ function setupImportedBy() {
 // ============================================================
 // DASHBOARD
 // ============================================================
-async function loadDashboard() {
+// ============================================================
+// DASHBOARD DROPDOWN
+// ============================================================
+let currentDashboardType = 'items';
+
+function toggleDashboardDropdown() {
+  const dd = document.getElementById('dashboard-dropdown');
+  const ch = document.getElementById('dashboard-chevron');
+  const open = dd.style.display !== 'none';
+  dd.style.display = open ? 'none' : 'flex';
+  ch.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function navigateDashboard(type) {
+  currentDashboardType = type;
+  // Update active state in dropdown
+  document.getElementById('nav-dashboard-items').classList.toggle('active', type === 'items');
+  document.getElementById('nav-dashboard-stories').classList.toggle('active', type === 'stories');
+  // Update parent nav highlight
+  const parent = document.getElementById('nav-dashboard-parent');
+  if (parent) parent.classList.add('active');
+  // Remove active from all other nav items
+  document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
+  // Switch views
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-dashboard-' + type)?.classList.add('active');
+  document.getElementById('topbar-title').textContent = type === 'items' ? 'Dashboard — Items' : 'Dashboard — User Stories';
+  // Hide search/new btn
+  const searchBar = document.getElementById('topbar-search');
+  if (searchBar) searchBar.style.display = 'none';
+  const newBtn = document.getElementById('topbar-new-btn');
+  if (newBtn) newBtn.style.display = 'none';
+  loadDashboard(type);
+}
+
+async function loadDashboard(type) {
+  type = type || currentDashboardType || 'items';
+  currentDashboardType = type;
   try {
-    const res = await apiFetch('/get_stats.php');
+    const res = await apiFetch('/get_stats.php?type=' + type);
     const d = res.data;
     if (!d) return;
-    document.getElementById('s-total').textContent = d.totalIssues;
-    document.getElementById('s-new').textContent   = d.newCount;
-    if (document.getElementById('s-draft')) document.getElementById('s-draft').textContent = d.draftCount || 0;
-    document.getElementById('s-bug').textContent   = d.bugCount;
-    document.getElementById('s-open').textContent  = d.openCount;
-    document.getElementById('s-prog').textContent  = d.inProgressCount;
-    document.getElementById('s-res').textContent   = d.resolvedCount;
-    document.getElementById('badge-open').textContent = d.totalIssues;
-    renderPriorityChart(d.byPriority);
-    loadRecentIssues();
+    if (type === 'items') {
+      document.getElementById('si-total').textContent  = d.total  || 0;
+      document.getElementById('si-new').textContent    = d.newCount   || 0;
+      document.getElementById('si-bug').textContent    = d.bugCount   || 0;
+      document.getElementById('si-open').textContent   = d.openCount  || 0;
+      document.getElementById('si-prog').textContent   = d.inProgressCount || 0;
+      document.getElementById('si-closed').textContent = d.closedCount || 0;
+      document.getElementById('badge-open').textContent = d.total || 0;
+      renderDashboardChart('chart-items-priority', d.byPriority, 'Items by Priority');
+      loadRecentItems();
+    } else {
+      document.getElementById('ss-total').textContent   = d.total   || 0;
+      document.getElementById('ss-draft').textContent   = d.draftCount   || 0;
+      document.getElementById('ss-review').textContent  = d.forReviewCount || 0;
+      document.getElementById('ss-indev').textContent   = d.inDevCount  || 0;
+      document.getElementById('ss-testing').textContent = d.testingCount || 0;
+      document.getElementById('ss-closed').textContent  = d.closedCount || 0;
+      document.getElementById('badge-open').textContent = d.total || 0;
+      renderDashboardChart('chart-stories-priority', d.byPriority, 'Stories by Priority');
+      loadRecentStories();
+    }
   } catch { }
 }
 
-function renderPriorityChart(data) {
-  if (charts['priority']) charts['priority'].destroy();
-  const ctx = document.getElementById('chart-priority').getContext('2d');
-  charts['priority'] = new Chart(ctx, {
+function renderDashboardChart(canvasId, data, title) {
+  if (charts[canvasId]) charts[canvasId].destroy();
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: data.map(d => d.priority),
+      labels: (data||[]).map(d => d.priority),
       datasets: [{
-        data: data.map(d => d.count),
+        data: (data||[]).map(d => d.count),
         backgroundColor: ['#cc0000','#d94f4f','#e07b20','#c88a00','#2e9e6b'],
         borderColor: 'rgba(255,255,255,0.8)',
         borderWidth: 2,
@@ -1555,31 +1674,56 @@ function renderPriorityChart(data) {
   });
 }
 
-// ============================================================
-// RECENT ISSUES
-// ============================================================
-async function loadRecentIssues() {
+async function loadRecentItems() {
   try {
-    const res = await apiFetch('/get_issues.php');
-    const issues = (res.data || []).slice(0, 8);
-    const tbody = document.getElementById('recent-issues-body');
-    tbody.innerHTML = issues.length ? issues.map(i => recentIssueRow(i)).join('') : emptyRow(8,'No issues found.');
+    const res = await apiFetch('/get_issues.php?source=item');
+    const items = (res.data || []).filter(i => i.source !== 'user_story').slice(0, 8);
+    const tbody = document.getElementById('recent-items-body');
+    if (!tbody) return;
+    tbody.innerHTML = items.length ? items.map(i => `
+      <tr onclick="viewIssue(${i.id})">
+        <td class="td-id">#${i.id}</td>
+        <td style="font-size:12px;">${escHtml(i.particular_name||i.dashboard||'—')}</td>
+        <td style="font-size:12px;">${escHtml(i.module||'—')}</td>
+        <td class="td-desc">${escHtml(i.description)}</td>
+        <td>${stateBadge(i.state)}</td>
+        <td>${statusBadge(i.status)}</td>
+        <td>${priBadge(i.priority)}</td>
+        <td style="font-size:12px;">${escHtml(i.issued_by_name||'—')}</td>
+        <td class="td-date">${fmtDate(i.date_identified)}</td>
+        <td><button class="btn btn-ghost btn-xs">View</button></td>
+      </tr>`).join('') : emptyRow(10, 'No items found.');
   } catch { }
 }
 
-function recentIssueRow(i) {
-  return `<tr>
-    <td class="td-id">#${i.id}</td>
-    <td style="font-size:12px;">${escHtml(i.dashboard||'—')}</td>
-    <td class="td-desc">${escHtml(i.title || i.description)}</td>
-    <td>${stateBadge(i.state)}</td>
-    <td>${priBadge(i.priority)}</td>
-    <td>${i.story_points ? `<span class="sp-badge">${i.story_points}</span>` : '—'}</td>
-    <td style="font-size:12px;">${escHtml(i.issued_by_name||'—')}</td>
-    <td class="td-date">${fmtDate(i.date_identified)}</td>
-    <td><button class="btn btn-ghost btn-xs" onclick="viewIssue(${i.id})">View</button></td>
-  </tr>`;
+async function loadRecentStories() {
+  try {
+    const res = await apiFetch('/get_issues.php?source=user_story');
+    const stories = (res.data || []).filter(i => i.source === 'user_story').slice(0, 8);
+    const tbody = document.getElementById('recent-stories-body');
+    if (!tbody) return;
+    tbody.innerHTML = stories.length ? stories.map(i => `
+      <tr onclick="viewIssue(${i.id})">
+        <td class="td-id">#${i.id}</td>
+        <td class="td-desc">${escHtml(i.title||'—')}</td>
+        <td style="font-size:12px;">${escHtml(i.particular_name||'—')}</td>
+        <td>${stateBadge(i.state)}</td>
+        <td>${priBadge(i.priority)}</td>
+        <td>${i.story_points ? `<span class="sp-badge">${i.story_points}</span>` : '—'}</td>
+        <td style="font-size:11px;color:#888;">${escHtml(i.iteration_path||'—')}</td>
+        <td style="font-size:12px;">${escHtml(i.assigned_to_name||'—')}</td>
+        <td class="td-date">${fmtDate(i.date_identified)}</td>
+        <td><button class="btn btn-ghost btn-xs">View</button></td>
+      </tr>`).join('') : emptyRow(10, 'No user stories found.');
+  } catch { }
 }
+
+
+
+// ============================================================
+// RECENT ISSUES
+// ============================================================
+
 
 // ============================================================
 // ALL ISSUES
@@ -1615,11 +1759,11 @@ async function loadIssues() {
       );
     }
     _issuesCache = issues;
-    // Apply My Items / My User Story filter
+    // Apply My Items / My Story filter
     if (_filterMine === 'item' || _filterMine === 'story') {
       const myId = String(localStorage.getItem('userId') || '');
       _issuesCache = issues.filter(i => {
-        const isMine = String(i.assigned_to || '') === myId || String(i.issued_by || '') === myId;
+        const isMine  = String(i.assigned_to || '') === myId || String(i.issued_by || '') === myId;
         const isStory = i.source === 'user_story';
         if (_filterMine === 'item')  return isMine && !isStory;
         if (_filterMine === 'story') return isMine && isStory;
@@ -1668,12 +1812,12 @@ function renderIssuesPagination(total, totalPages) {
 function goIssuesPage(n) { _issuesPage = n; renderIssuesPage(); }
 
 function toggleMineFilter(val) {
-  _filterMine = val;
+  _filterMine = val || 'all';
   const titleEl = document.getElementById('all-items-title');
   if (titleEl) {
-    if (val === 'item')        titleEl.textContent = 'MY ITEMS';
-    else if (val === 'story')  titleEl.textContent = 'MY USER STORY';
-    else                       titleEl.textContent = 'ALL ITEMS & USER STORY';
+    if (_filterMine === 'item')        titleEl.textContent = 'MY ITEMS';
+    else if (_filterMine === 'story')  titleEl.textContent = 'MY USER STORY';
+    else                               titleEl.textContent = 'ALL ITEMS & USER STORY';
   }
   loadIssues();
 }
@@ -1734,8 +1878,8 @@ async function viewIssue(id) {
         <div>
           ${isStory ? `
           <!-- STORY HEADER -->
-          <h2 style="font-size:15px;font-weight:700;color:var(--text-bright);margin-bottom:4px;line-height:1.4;">${escHtml(issue.title || '—')}</h2>
-          <p style="font-size:12.5px;color:#666;margin-bottom:14px;line-height:1.5;">${escHtml(issue.description || '—')}</p>
+          <h2 style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px;line-height:1.4;">${escHtml(issue.title || '—')}</h2>
+          <p style="font-size:13px;color:#1a1a1a;margin-bottom:14px;line-height:1.6;">${escHtml(issue.description || '—')}</p>
           <div class="detail-meta">
             <div class="meta-row"><span class="meta-key">State</span><span class="meta-val">${stateBadge(issue.state)}</span></div>
             <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
@@ -1755,7 +1899,7 @@ async function viewIssue(id) {
           </div>
           ` : `
           <!-- ITEM HEADER -->
-          <p style="font-size:12.5px;color:#666;margin-bottom:14px;line-height:1.5;">${escHtml(issue.description)}</p>
+          <p style="font-size:13px;color:#1a1a1a;margin-bottom:14px;line-height:1.6;">${escHtml(issue.description)}</p>
           <div class="detail-meta">
             <div class="meta-row"><span class="meta-key">State</span><span class="meta-val">${stateBadge(issue.state)}</span></div>
             <div class="meta-row"><span class="meta-key">Status</span><span class="meta-val">${statusBadge(issue.status)}</span></div>
@@ -1822,13 +1966,17 @@ async function viewIssue(id) {
     document.getElementById('edit-issue-btn').onclick   = () => openEditModal(issue);
     document.getElementById('delete-issue-btn').onclick = () => deleteIssue(id);
 
-    // RBAC: all roles except staff/developer can edit and delete
+    // RBAC: reporters cannot edit or delete issues
     const userRole = localStorage.getItem('role');
     const editBtn   = document.getElementById('edit-issue-btn');
     const deleteBtn = document.getElementById('delete-issue-btn');
-    const canEditDelete = (userRole === 'admin' || userRole === 'reporter');
-    if (editBtn)   editBtn.style.display   = canEditDelete ? '' : 'none';
-    if (deleteBtn) deleteBtn.style.display = canEditDelete ? '' : 'none';
+    if (userRole === 'reporter') {
+      if (editBtn)   editBtn.style.display   = 'none';
+      if (deleteBtn) deleteBtn.style.display = 'none';
+    } else {
+      if (editBtn)   editBtn.style.display   = '';
+      if (deleteBtn) deleteBtn.style.display = '';
+    }
 
   } catch (e) {
     document.getElementById('issue-detail-body').innerHTML = `<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Failed to load issue</div></div>`;
@@ -1878,20 +2026,14 @@ const PARTS_PER_PAGE = 5;
 async function loadParticulars() {
   const tbody = document.getElementById('particular-tbody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;"><div class="loader"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;"><div class="loader"></div></td></tr>';
   try {
     const res = await apiFetch('/get_particulars.php');
-    if (!res || !res.success) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#cc0000;">Failed to load particulars: ' + (res && res.message ? res.message : 'Unknown error') + '</td></tr>';
-      return;
-    }
     _allParticularsCache = res.data || [];
     _particularsPage = 1;
     renderParticularsList();
-    const pcnt = document.getElementById('particulars-count');
-    if (pcnt) pcnt.textContent = _allParticularsCache.length;
-  } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#cc0000;">Failed to load particulars: ' + err.message + '</td></tr>';
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#cc0000;">Failed to load particulars.</td></tr>';
   }
 }
 
@@ -1900,7 +2042,7 @@ function renderParticularsList() {
   if (!tbody) return;
   const rows = _allParticularsCache;
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#aaa;">No particulars yet. Add one to get started.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#aaa;">No particulars yet. Add one to get started.</td></tr>';
     renderParticularsPagination(0, 1);
     return;
   }
@@ -1913,11 +2055,12 @@ function renderParticularsList() {
     <tr style="border-bottom:1px solid #f0f0f0;">
       <td style="padding:7px 10px;font-size:12px;font-family:'Roboto Mono',monospace;color:#aaa;">#${p.particular_id}</td>
       <td style="padding:7px 10px;font-weight:600;font-size:13px;">${escHtml(p.name)}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#666;">${escHtml(p.description||'—')}</td>
       <td style="padding:7px 10px;"><span style="padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;
         background:${p.isActive==1?'rgba(46,158,107,0.12)':'rgba(136,136,136,0.12)'};
         color:${p.isActive==1?'#2e9e6b':'#888'};">${p.isActive==1?'Active':'Inactive'}</span></td>
       <td style="padding:7px 10px;text-align:center;"><div style="display:flex;gap:6px;justify-content:center;">
-        <button onclick="openParticularModal('edit',${p.particular_id},'${escHtml(p.name).replace(/'/g,"\'")}',${p.isActive})" style="padding:3px 10px;background:#f0f0f0;color:#555;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:11px;">✏️ Edit</button>
+        <button onclick="openParticularModal('edit',${p.particular_id},'${escHtml(p.name).replace(/'/g,"\'")}',${p.isActive},'${escHtml(p.description||'').replace(/'/g,"\'")}') " style="padding:3px 10px;background:#f0f0f0;color:#555;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:11px;">✏️ Edit</button>
         <button onclick="deleteParticular(${p.particular_id},'${escHtml(p.name).replace(/'/g,"\'")}') " style="padding:3px 8px;background:rgba(204,0,0,0.08);color:#cc0000;border:1px solid rgba(204,0,0,0.2);border-radius:4px;cursor:pointer;font-size:11px;">🗑</button>
       </div></td>
     </tr>`).join('');
@@ -1944,10 +2087,11 @@ function renderParticularsPagination(total, totalPages) {
 
 function goPartsPage(n) { _particularsPage = n; renderParticularsList(); }
 
-function openParticularModal(mode, id='', name='', isActive=1) {
-  document.getElementById('part-id').value    = id;
-  document.getElementById('part-name').value  = name;
-  document.getElementById('part-active').value = isActive;
+function openParticularModal(mode, id='', name='', isActive=1, description='') {
+  document.getElementById('part-id').value          = id;
+  document.getElementById('part-name').value        = name;
+  document.getElementById('part-description').value = description;
+  document.getElementById('part-active').value      = isActive;
   document.getElementById('particular-modal-title').textContent = mode==='add' ? '➕ New Particular' : '✏️ Edit Particular';
   document.getElementById('part-save-btn').textContent = mode==='add' ? '💾 Save' : '💾 Update';
   document.getElementById('particular-modal').classList.add('open');
@@ -1955,16 +2099,17 @@ function openParticularModal(mode, id='', name='', isActive=1) {
 }
 
 async function saveParticular() {
-  const id     = document.getElementById('part-id').value;
-  const name   = document.getElementById('part-name').value.trim();
-  const active = document.getElementById('part-active').value;
+  const id          = document.getElementById('part-id').value;
+  const name        = document.getElementById('part-name').value.trim();
+  const description = document.getElementById('part-description').value.trim();
+  const active      = document.getElementById('part-active').value;
   if (!name) { document.getElementById('part-name').style.borderColor='#cc0000'; toast('Particular name is required.','error'); return; }
   document.getElementById('part-name').style.borderColor = '';
   const btn = document.getElementById('part-save-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
     const res = await apiFetch(id ? '/update_particular.php' : '/create_particular.php', {
-      method: 'POST', body: JSON.stringify({ id, name, isActive: active })
+      method: 'POST', body: JSON.stringify({ id, name, description, isActive: active })
     });
     if (res.success) { toast(id ? 'Particular updated!' : 'Particular created!', 'success'); closeModal('particular-modal'); loadParticulars(); loadMaintUsers(); }
     else toast(res.message || 'Failed to save.', 'error');
@@ -1993,7 +2138,7 @@ async function loadMaintUsers() {
     _allUsersCache = res.data || [];
     renderUserList(_allUsersCache);
     const cnt = document.getElementById('users-count');
-    if (cnt) cnt.textContent = _allUsersCache.length;
+    if (cnt) cnt.textContent = _allUsersCache.length + ' user' + (_allUsersCache.length !== 1 ? 's' : '');
   } catch {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#cc0000;">Failed to load users.</td></tr>';
   }
@@ -2419,37 +2564,55 @@ async function openActivityHistory() {
 // EDIT
 // ============================================================
 function openEditModal(issue) {
-  // New fields: title, description, particular, module
-  document.getElementById('edit-title').value           = issue.title || '';
-  document.getElementById('edit-description').value     = issue.description || '';
-  document.getElementById('edit-particular').value      = issue.particular_id || '';
-  document.getElementById('edit-module').value          = issue.module || '';
-  // Status field (edit-state) shows progress status, defaulting to In Progress for New Items
-  document.getElementById('edit-state').value = issue.status || issue.state || 'In Progress';
-  document.getElementById('edit-priority').value           = issue.priority;
-  document.getElementById('edit-story-points').value       = issue.storyPoints || issue.story_points || '';
-  document.getElementById('edit-iteration-path').value     = issue.iterationPath || issue.iteration_path || '';
-  document.getElementById('edit-area-path') && (document.getElementById('edit-area-path').value = issue.areaPath || issue.area_path || '');
-  document.getElementById('edit-acceptance-criteria').value= issue.acceptanceCriteria || issue.acceptance_criteria || '';
+  const isStory = issue.source === 'user_story' || issue.type === 'story' || (issue.title && issue.title.trim());
+
+  // Update modal title
+  const editTitle = document.getElementById('edit-modal-title');
+  if (editTitle) editTitle.textContent = isStory ? 'Update User Story' : 'Update Issue';
+
+  // Show/hide type-specific sections
+  document.getElementById('edit-item-fields').style.display  = isStory ? 'none'  : 'block';
+  document.getElementById('edit-story-fields').style.display = isStory ? 'block' : 'none';
+
+  // Common fields
+  document.getElementById('edit-description').value = issue.description || '';
+  document.getElementById('edit-particular').value  = issue.particular_id || '';
+  document.getElementById('edit-module').value      = issue.module || '';
+  document.getElementById('edit-priority').value    = issue.priority || '4-Medium';
   const sel = document.getElementById('edit-assigned-to');
-  sel.value = issue.assigned_to || issue.assignedTo || '';
+  if (sel) sel.value = issue.assigned_to || issue.assignedTo || '';
+
+  if (isStory) {
+    document.getElementById('edit-title').value               = issue.title || '';
+    document.getElementById('edit-story-points').value        = issue.storyPoints || issue.story_points || '';
+    document.getElementById('edit-iteration-path').value      = issue.iterationPath || issue.iteration_path || '';
+    document.getElementById('edit-story-state').value         = issue.state || 'Draft';
+    document.getElementById('edit-acceptance-criteria').value = issue.acceptanceCriteria || issue.acceptance_criteria || '';
+  } else {
+    document.getElementById('edit-state').value = issue.status || 'In Progress';
+  }
+
   openModal('edit-issue-modal');
 }
 
 async function saveEdit() {
-  const statusVal = document.getElementById('edit-state').value;
+  const isStory = document.getElementById('edit-story-fields').style.display !== 'none';
   const dto = {
-    title:               document.getElementById('edit-title').value.trim()        || null,
-    description:         document.getElementById('edit-description').value.trim()  || null,
-    particularId:        document.getElementById('edit-particular').value          || null,
-    module:              document.getElementById('edit-module').value.trim()        || null,
-    status:              statusVal,
-    priority:            document.getElementById('edit-priority').value,
-    storyPoints:         document.getElementById('edit-story-points').value        || null,
-    assignedTo:          document.getElementById('edit-assigned-to').value         || null,
-    iterationPath:       document.getElementById('edit-iteration-path').value,
-    acceptanceCriteria:  document.getElementById('edit-acceptance-criteria').value,
+    description:  document.getElementById('edit-description').value.trim()  || null,
+    particularId: document.getElementById('edit-particular').value           || null,
+    module:       document.getElementById('edit-module').value.trim()        || null,
+    priority:     document.getElementById('edit-priority').value,
+    assignedTo:   document.getElementById('edit-assigned-to').value          || null,
   };
+  if (isStory) {
+    dto.title              = document.getElementById('edit-title').value.trim()               || null;
+    dto.storyPoints        = document.getElementById('edit-story-points').value               || null;
+    dto.iterationPath      = document.getElementById('edit-iteration-path').value             || null;
+    dto.state              = document.getElementById('edit-story-state').value                || 'Draft';
+    dto.acceptanceCriteria = document.getElementById('edit-acceptance-criteria').value        || null;
+  } else {
+    dto.status = document.getElementById('edit-state').value || 'In Progress';
+  }
 
   try {
     // FIX: id passed as query param, not path segment
@@ -2476,7 +2639,7 @@ async function saveEdit() {
       closeModal('edit-issue-modal');
       toast('Issue updated!', 'success');
       viewIssue(currentIssueId);
-      loadDashboard();
+      loadDashboard(currentDashboardType);
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Update failed.', 'error');
@@ -2495,7 +2658,7 @@ async function deleteIssue(id) {
     if (res.success) {
       closeModal('issue-detail-modal');
       toast('Issue deleted.', 'info');
-      loadDashboard();
+      loadDashboard(currentDashboardType);
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Delete failed.', 'error');
@@ -2634,30 +2797,22 @@ async function submitNewIssue(e) {
   btn.innerHTML = '<div class="loader"></div> Saving…';
 
   // Validate required fields
-  const niParticular  = document.getElementById('ni-particular');
-  const niDesc        = document.getElementById('ni-desc');
+  const niParticular = document.getElementById('ni-particular');
+  const niDesc       = document.getElementById('ni-desc');
   let niErrors = [];
   if (!niParticular.value) {
     niParticular.style.borderColor = '#cc0000';
     niParticular.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
     niErrors.push('Particular');
-  } else {
-    niParticular.style.borderColor = '';
-    niParticular.style.boxShadow   = '';
-  }
+  } else { niParticular.style.borderColor = ''; niParticular.style.boxShadow = ''; }
   if (!niDesc.value.trim()) {
     niDesc.style.borderColor = '#cc0000';
     niDesc.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
     niErrors.push('Description');
-  } else {
-    niDesc.style.borderColor = '';
-    niDesc.style.boxShadow   = '';
-  }
+  } else { niDesc.style.borderColor = ''; niDesc.style.boxShadow = ''; }
   if (niErrors.length > 0) {
     toast('Required: ' + niErrors.join(', '), 'error');
-    btn.disabled = false;
-    btn.textContent = 'Create';
-    return;
+    btn.disabled = false; btn.textContent = 'Create'; return;
   }
 
   const dto = {
@@ -2696,7 +2851,7 @@ async function submitNewIssue(e) {
       if (niList) niList.innerHTML = '';
       renderFormComments('ni');
       setTodayDate();
-      loadDashboard();
+      loadDashboard(currentDashboardType);
       navigate('issues');
     } else {
       toast(res.message || 'Failed to create item.', 'error');
@@ -2806,7 +2961,7 @@ async function submitUserStory(e) {
       if (usList) usList.innerHTML = '';
       renderFormComments('us');
       setUserStoryDate();
-      loadDashboard();
+      loadDashboard(currentDashboardType);
       navigate('issues');
     } else {
       toast(res.message || 'Failed to create user story.', 'error');
@@ -2970,7 +3125,7 @@ async function doImport() {
       </div>`;
       toast(`${importedCount} issue(s) imported!`, 'success');
       clearFile();
-      loadDashboard();
+      loadDashboard(currentDashboardType);
     } else {
       result.innerHTML = `<div style="background:rgba(217,79,79,0.1);border:1px solid rgba(217,79,79,0.3);border-radius:8px;padding:14px 18px;color:var(--danger);">❌ No issues imported. ${errors.length ? errors[0] : ''}</div>`;
       toast('Import failed.', 'error');
@@ -2997,11 +3152,15 @@ async function generateReport() {
     currentReportId = r.id;
 
     document.getElementById('report-grid').innerHTML = [
-      ['Total Issues',r.totalIssues,],['New',r.newCount,],['Bugs',r.bugCount,],
-      ['Open',r.openCount,],['In Progress',r.inProgressCount,],['Resolved',r.resolvedCount,]
+      ['Total Issues', r.totalIssues],
+      ['New',          r.newCount],
+      ['Bugs',         r.bugCount],
+      ['Open',         r.openCount],
+      ['In Progress',  r.inProgressCount],
+      ['Closed',       r.resolvedCount]
     ].map(([label, val]) => `
       <div class="report-stat-box">
-      <div><div class="rs-label">${label}</div><div class="rs-val">${val}</div></div>
+        <div><div class="rs-label">${label}</div><div class="rs-val">${val}</div></div>
       </div>`).join('');
 
     document.getElementById('latest-report-section').style.display = '';
