@@ -26,6 +26,8 @@ try {
     if (isset($data['status'])) { $fields[] = 'status = :status'; $params[':status'] = $data['status']; }
     if (isset($data['priority']))       { $fields[] = "priority = :priority";             $params[':priority']      = $data['priority']; }
     if (isset($data['assignedTo']))     { $fields[] = "assigned_to = :assignedTo";        $params[':assignedTo']    = $data['assignedTo'] ?: null; }
+    if (isset($data['issuedBy']))       { $fields[] = "issued_by = :issuedBy";             $params[':issuedBy']      = $data['issuedBy'] ?: null; }
+    if (isset($data['dateIdentified'])) { $fields[] = "date_identified = :dateIdentified"; $params[':dateIdentified'] = $data['dateIdentified'] ?: null; }
 
     // New PDF-aligned fields
     if (isset($data['title']))               { $fields[] = "title = :title";                           $params[':title']              = $data['title']; }

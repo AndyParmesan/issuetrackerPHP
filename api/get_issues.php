@@ -57,7 +57,21 @@ try {
         $params[':particular'] = $particular;
     }
     if (!empty($search)) {
-$sql .= " AND (CAST(i.id AS CHAR) LIKE :search OR i.description LIKE :search OR i.title LIKE :search OR i.dashboard LIKE :search OR i.module LIKE :search OR p.name LIKE :search)";        $params[':search'] = "%$search%";
+        $sql .= " AND (
+            CAST(i.id AS CHAR) LIKE :search_id
+            OR i.title         LIKE :search_title
+            OR i.description   LIKE :search_desc
+            OR i.dashboard     LIKE :search_dashboard
+            OR i.module        LIKE :search_module
+            OR p.name          LIKE :search_particular
+        )";
+        $searchParam = "%$search%";
+        $params[':search_id']         = $searchParam;
+        $params[':search_title']      = $searchParam;
+        $params[':search_desc']       = $searchParam;
+        $params[':search_dashboard']  = $searchParam;
+        $params[':search_module']     = $searchParam;
+        $params[':search_particular'] = $searchParam;
     }
 
     $sql .= " ORDER BY i.created_at DESC";

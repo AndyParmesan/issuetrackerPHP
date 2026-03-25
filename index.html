@@ -42,7 +42,6 @@ body {
   color: var(--text-main);
   display: flex;
   min-height: 100vh;
-  overflow-x: hidden;
   width: 100%;
 }
 
@@ -61,6 +60,7 @@ body {
   left: 0; top: 0; bottom: 0;
   z-index: 100;
   transition: transform 0.3s ease;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.4);
 }
 .sidebar-logo {
   padding: 16px 12px 14px;
@@ -78,7 +78,7 @@ body {
   transition: all 0.2s; color: rgba(255,255,255,0.85);
   font-size: 13.5px; font-weight: 500; user-select: none; text-decoration: none;
 }
-.nav-item:hover { background: rgba(255,255,255,0.15); color: #ffffff; }
+.nav-item:hover { background: rgba(255,255,255,0.15); color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
 .nav-item.active { background: rgba(255,255,255,0.2); color: #ffffff; border-left: 3px solid #ffffff; padding-left: 9px; }
 .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
 .nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 99px; font-family: 'Roboto Mono', monospace; }
@@ -111,8 +111,8 @@ body.modal-open { overflow: hidden; }
 .view.active { display: flex; }
 
 /* ===== STAT CARDS ===== */
-.stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-.stat-card { background: var(--card-bg); border: 2px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; position: relative; overflow: hidden; transition: all 0.2s; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 14px; }
+.stat-card { background: var(--card-bg); border: 2px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; position: relative; overflow: hidden; transition: all 0.2s; min-width: 140px; flex: 0 0 auto; }
 .stat-card:hover { transform: translateY(-2px); }
 .stat-card::before { display: none; }
 
@@ -170,21 +170,19 @@ body.modal-open { overflow: hidden; }
 /* ===== STAT CAROUSEL ===== */
 .stat-carousel-wrap { position: relative; width: 100%; }
 .stat-carousel {
-  display: flex; gap: 14px;
-  overflow-x: auto; overflow-y: hidden;
-  padding: 4px 4px 12px 4px;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #cc0000 #f0f0f0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  padding: 4px 2px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--card-bg);
 }
-.stat-carousel::-webkit-scrollbar { height: 6px; }
-.stat-carousel::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 99px; margin: 0 4px; }
-.stat-carousel::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 99px; }
-.stat-carousel::-webkit-scrollbar-thumb:hover { background: #aa0000; }
-.stat-carousel .stat-card { min-width: calc(20% - 12px); flex-shrink: 0; cursor: pointer; }
+#stories-carousel {
+  grid-template-columns: repeat(6, 1fr);
+}
+.stat-carousel::-webkit-scrollbar { display: none; }
+.stat-carousel .stat-card { width: auto; cursor: pointer; }
 .stat-carousel .stat-card:hover { transform: translateY(-2px); border-color: rgba(204,0,0,0.3); }
 .stat-carousel .stat-card.active-filter { border-color: #cc0000; box-shadow: 0 0 0 2px rgba(204,0,0,0.2); }
 .stat-carousel .stat-label { font-weight: 700; }
@@ -199,7 +197,7 @@ body.modal-open { overflow: hidden; }
 .stat-icon  { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.12; }
 
 /* ===== CARDS ===== */
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: clip; }
 .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text-bright); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Roboto Mono', monospace; }
 .card-header .sep { flex: 1; }
@@ -214,7 +212,7 @@ thead th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 6
 tbody tr { border-bottom: 1px solid rgba(204,0,0,0.07); transition: background 0.15s; cursor: pointer; }
 tbody tr:hover { background: rgba(204,0,0,0.04); }
 tbody td { padding: 11px 14px; color: var(--text-main); vertical-align: middle; }
-.td-desc { max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-bright); }
+.td-desc { max-width: 480px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-bright); }
 .td-id   { font-family: 'Roboto Mono', monospace; color: #1a1a1a; font-size: 11px; }
 .td-date { font-family: 'Roboto Mono', monospace; font-size: 11px; white-space: nowrap; }
 
@@ -324,8 +322,8 @@ select.form-control option { background: #ffffff; color: #333333; }
 .detail-meta .pri-badge { font-size: 12px; padding: 5px 14px; }
 .detail-meta .sp-badge  { font-size: 12px; width: 42px; height: 42px; }
 .meta-row { display: flex; align-items: flex-start; gap: 10px; }
-.meta-key { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; color: #1a1a1a; text-transform: uppercase; font-family: 'Roboto Mono', monospace; min-width: 110px; padding-top: 3px; }
-.meta-val { color: #1a1a1a; font-size: 14px; font-weight: 500; }
+.meta-key { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #1a1a1a; text-transform: uppercase; font-family: 'Roboto Mono', monospace; min-width: 110px; padding-top: 3px; }
+.meta-val { color: #1a1a1a; font-size: 12px; font-weight: 500; }
 
 /* ===== COMMENTS ===== */
 .comments-section { display: flex; flex-direction: column; gap: 10px; }
@@ -580,10 +578,15 @@ select.form-control option { background: #ffffff; color: #333333; }
               <option>1-Urgent</option><option>2-Critical</option><option>3-High</option>
               <option>4-Medium</option><option>5-Low</option>
             </select>
+            <select class="filter-select" id="filter-assigned-to" onchange="loadIssues()">
+              <option value="">All Assigned</option>
+            </select>
             <select id="filter-mine-btn" class="filter-select" onchange="toggleMineFilter(this.value)" style="white-space:nowrap;">
               <option value="all">All</option>
+              <option value="all_items">All Items</option>
+              <option value="all_stories">All User Story</option>
               <option value="item">My Items</option>
-              <option value="story">My Story</option>
+              <option value="story">My User Story</option>
             </select>
             <button class="btn btn-ghost btn-sm" onclick="exportIssues()">⬇ Export XLSX</button>
           </div>
@@ -608,7 +611,7 @@ select.form-control option { background: #ffffff; color: #333333; }
 
             <div class="form-row">
               <div class="form-group">
-                <label>Particular <span style="color:#cc0000">*</span></label>
+                <label>Particular <span style="color:#000">*</span></label>
                 <select class="form-control" id="ni-particular">
                   <option value="">— Select Particular —</option>
                 </select>
@@ -620,13 +623,13 @@ select.form-control option { background: #ffffff; color: #333333; }
             </div>
 
             <div class="form-group">
-              <label>Description *</label>
+              <label>Description <span style="color:#000">*</span></label>
               <textarea id="ni-desc" placeholder="Describe the issue in detail…" rows="4" required></textarea>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label>State</label>
+                <label>State <span style="color:#000">*</span></label>
                 <select class="form-control" id="ni-state">
                   <option value="New" selected>New</option>
                   <option value="Bug">Bug</option>
@@ -721,13 +724,13 @@ select.form-control option { background: #ffffff; color: #333333; }
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#cc0000;font-family:'Roboto Mono',monospace;padding:0 0 8px 0;border-bottom:2px solid rgba(204,0,0,0.15);margin-bottom:18px;">Header Section</div>
 
             <div class="form-group" style="margin-bottom:14px;">
-              <label>Title * <span style="color:#aaa;font-size:9px;font-weight:400;text-transform:none;"></span></label>
+              <label>Title <span style="color:#000">*</span> <span style="color:#aaa;font-size:9px;font-weight:400;text-transform:none;"></span></label>
               <input type="text" id="us-title" required />
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
               <div class="form-group">
-                <label>State *</label>
+                <label>State <span style="color:#000">*</span></label>
                 <select class="form-control" id="us-state" required>
                   <option value="Draft" selected>Draft</option>
                   <option value="For Review">For Review</option>
@@ -776,13 +779,13 @@ select.form-control option { background: #ffffff; color: #333333; }
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#cc0000;font-family:'Roboto Mono',monospace;padding:0 0 8px 0;border-bottom:2px solid rgba(204,0,0,0.15);margin-bottom:18px;">Main Section</div>
 
             <div class="form-group" style="margin-bottom:14px;">
-              <label>Description *</label>
+              <label>Description <span style="color:#000">*</span></label>
               <textarea id="us-desc" placeholder="Describe the user story in detail…" rows="4" required></textarea>
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
               <div class="form-group">
-                <label>Particular</label>
+                <label>Particular <span style="color:#000">*</span></label>
                 <select class="form-control" id="us-particular" required>
                   <option value="" disabled selected>— Select Particular —</option>
                 </select>
@@ -816,13 +819,13 @@ select.form-control option { background: #ffffff; color: #333333; }
 
               <!-- Priority box -->
               <div style="background:#fff8f8;border:1px solid rgba(204,0,0,0.15);border-radius:10px;padding:16px 18px;">
-                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#cc0000;font-family:'Roboto Mono',monospace;margin-bottom:10px;">Priority — Business Importance</div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#cc0000;font-family:'Roboto Mono',monospace;margin-bottom:10px;">Priority</div>
                 <select class="form-control" id="us-priority" style="margin-bottom:12px;">
-                  <option value="1-Urgent">1 – Urgent &nbsp;(System outage / data loss)</option>
-                  <option value="2-Critical">2 – Critical &nbsp;(Blocks dev or production)</option>
-                  <option value="3-High">3 – High &nbsp;(Major functionality affected)</option>
-                  <option value="4-Medium" selected>4 – Medium &nbsp;(Moderate impact)</option>
-                  <option value="5-Low">5 – Low &nbsp;(Minor / cosmetic)</option>
+                  <option value="1-Urgent">1-Urgent</option>
+                  <option value="2-Critical">2-Critical</option>
+                  <option value="3-High">3-High</option>
+                  <option value="4-Medium" selected>4-Medium</option>
+                  <option value="5-Low">5-Low</option>
                 </select>
                 <div style="font-size:11px;color:#aaa;line-height:1.6;">
                 </div>
@@ -1169,7 +1172,7 @@ select.form-control option { background: #ffffff; color: #333333; }
     <div class="modal-body" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
       <input type="hidden" id="part-id" />
       <div class="form-group">
-        <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Particular Name <span style="color:#cc0000">*</span></label>
+        <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Particular Name</label>
         <input type="text" class="form-control" id="part-name" placeholder="e.g. MCC, SEC, Inventory…" style="margin-top:6px;" />
       </div>
       <div class="form-group">
@@ -1275,7 +1278,7 @@ select.form-control option { background: #ffffff; color: #333333; }
       <!-- COMMON FIELDS (both ITEM and STORY) -->
       <div class="form-row">
         <div class="form-group">
-          <label>Particular <span style="color:#cc0000">*</span></label>
+          <label>Particular <span style="color:#000">*</span></label>
           <select class="form-control" id="edit-particular">
             <option value="">— Select Particular —</option>
           </select>
@@ -1286,7 +1289,7 @@ select.form-control option { background: #ffffff; color: #333333; }
         </div>
       </div>
       <div class="form-group">
-        <label>Description</label>
+        <label>Description <span style="color:#000">*</span></label>
         <textarea id="edit-description" rows="3" placeholder="Describe the issue…"></textarea>
       </div>
 
@@ -1294,7 +1297,7 @@ select.form-control option { background: #ffffff; color: #333333; }
       <div id="edit-item-fields">
         <div class="form-row">
           <div class="form-group">
-            <label>State</label>
+            <label>State <span style="color:#000">*</span></label>
             <select class="form-control" id="edit-state">
               <option value="New">New</option>
               <option value="Bug">Bug</option>
@@ -1321,9 +1324,9 @@ select.form-control option { background: #ffffff; color: #333333; }
 
       <!-- STORY-ONLY FIELDS -->
       <div id="edit-story-fields" style="display:none;">
-        <div class="form-group">
-          <label>Title <span style="color:#cc0000">*</span></label>
-          <input type="text" id="edit-title" placeholder="Short title for this story" />
+        <div class="form-group" style="margin-bottom:6px;">
+          <label style="font-size:11px;">Title</label>
+          <input type="text" id="edit-title" placeholder="Short title for this story" style="padding:5px 8px;font-size:12px;" />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -1349,7 +1352,7 @@ select.form-control option { background: #ffffff; color: #333333; }
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>State</label>
+            <label>State <span style="color:#000">*</span></label>
             <select class="form-control" id="edit-story-state">
               <option value="Draft">Draft</option>
               <option value="For Review">For Review</option>
@@ -1364,9 +1367,9 @@ select.form-control option { background: #ffffff; color: #333333; }
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label>Acceptance Criteria</label>
-          <textarea id="edit-acceptance-criteria" rows="4" placeholder="Conditions for story completion…"></textarea>
+        <div class="form-group" style="margin-bottom:6px;">
+          <label style="font-size:11px;">Acceptance Criteria</label>
+          <textarea id="edit-acceptance-criteria" rows="3" placeholder="Conditions for story completion…" style="padding:5px 8px;font-size:12px;"></textarea>
         </div>
       </div>
 
@@ -1397,7 +1400,8 @@ select.form-control option { background: #ffffff; color: #333333; }
       <!-- DATE (common) -->
       <div class="form-group">
         <label>Date Identified</label>
-        <input type="date" id="edit-date-identified" />
+        <div id="edit-date-display" style="font-size:13px;color:#1a1a1a;padding:8px 0;"></div>
+        <input type="hidden" id="edit-date-identified" />
       </div>
 
       <!-- ATTACHMENT (common) -->
@@ -1578,6 +1582,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadUsers();
   navigateDashboard('items');
   setTodayDate();
+  updateCombinedBadge();
 
   document.querySelectorAll('.nav-item[data-view]').forEach(item => {
     item.addEventListener('click', () => navigate(item.dataset.view));
@@ -1628,13 +1633,15 @@ function navigate(view) {
     const filterParticular = document.getElementById('filter-particular');
     const filterState      = document.getElementById('filter-state');
     const filterPriority   = document.getElementById('filter-priority');
+    const filterAssignedTo = document.getElementById('filter-assigned-to');
     const filterMine       = document.getElementById('filter-mine-btn');
     const globalSearch     = document.getElementById('global-search');
-    if (filterParticular) filterParticular.value = '';
-    if (filterState)      filterState.value      = '';
-    if (filterPriority)   filterPriority.value   = '';
-    if (filterMine)       filterMine.value       = 'all';
-    if (globalSearch)     globalSearch.value     = '';
+    if (filterParticular)  filterParticular.value  = '';
+    if (filterState)       filterState.value       = '';
+    if (filterPriority)    filterPriority.value    = '';
+    if (filterAssignedTo)  filterAssignedTo.value  = '';
+    if (filterMine)        filterMine.value        = 'all';
+    if (globalSearch)      globalSearch.value      = '';
     _filterMine = 'all';
     loadIssues();
   }
@@ -1748,6 +1755,17 @@ function populateUserSelects() {
       sel.appendChild(opt);
     });
   });
+
+  // Assigned To filter
+  const filterAssigned = document.getElementById('filter-assigned-to');
+  if (filterAssigned) {
+    filterAssigned.innerHTML = '<option value="">All Assigned</option>';
+    allUsers.filter(u => u.isActive !== 0 && u.isActive !== '0').forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.name; opt.textContent = u.name;
+      filterAssigned.appendChild(opt);
+    });
+  }
 
   // Created By (edit modal) — all active users
   const editIssuedBy = document.getElementById('edit-issued-by');
@@ -1873,6 +1891,19 @@ function navigateDashboard(type) {
   loadDashboard(type);
 }
 
+async function updateCombinedBadge() {
+  try {
+    const [rItems, rStories] = await Promise.all([
+      apiFetch('/get_stats.php?type=items'),
+      apiFetch('/get_stats.php?type=stories')
+    ]);
+    const totalItems   = rItems?.data?.total   || 0;
+    const totalStories = rStories?.data?.total || 0;
+    const el = document.getElementById('badge-open');
+    if (el) el.textContent = totalItems + totalStories;
+  } catch { }
+}
+
 async function loadDashboard(type) {
   type = type || currentDashboardType || 'items';
   currentDashboardType = type;
@@ -1891,7 +1922,7 @@ async function loadDashboard(type) {
       document.getElementById('si-needsclarif').textContent = d.needsClarifCount   || 0;
       document.getElementById('si-monitoring').textContent  = d.monitoringCount    || 0;
       document.getElementById('si-closed').textContent      = d.closedCount        || 0;
-      document.getElementById('badge-open').textContent = d.total || 0;
+      updateCombinedBadge();
       renderDashboardChart('chart-items-priority', d.byPriority, 'Items by Priority');
       loadRecentItems();
     } else {
@@ -1906,7 +1937,7 @@ async function loadDashboard(type) {
       document.getElementById('ss-readydeploy').textContent= d.readyDeployCount || 0;
       document.getElementById('ss-deployed').textContent   = d.deployedCount    || 0;
       document.getElementById('ss-closed').textContent     = d.closedCount      || 0;
-      document.getElementById('badge-open').textContent = d.total || 0;
+      updateCombinedBadge();
       renderDashboardChart('chart-stories-priority', d.byPriority, 'Stories by Priority');
       loadRecentStories();
     }
@@ -2065,7 +2096,7 @@ async function loadRecentStories() {
 let _issuesCache = [];
 let _issuesPage  = 1;
 let _filterMine  = 'all';
-const ISSUES_PER_PAGE = 10;
+const ISSUES_PER_PAGE = 15;
 
 function windowedPages(cur, total) {
   if (total <= 7) return Array.from({length:total}, (_,i) => i+1);
@@ -2088,11 +2119,12 @@ async function loadIssues() {
   const priority   = document.getElementById('filter-priority')?.value   || '';
   const particular = document.getElementById('filter-particular')?.value || '';
   const search     = document.getElementById('global-search')?.value.trim() || '';
+  const assignedTo = document.getElementById('filter-assigned-to')?.value  || '';
   const params     = new URLSearchParams();
   if (state)      params.set('state', state);
   if (priority)   params.set('priority', priority);
   if (particular) params.set('particular', particular);
-  if (search)     params.set('search', search);  // always send search to API
+  if (search)     params.set('search', search);
   try {
     const res = await apiFetch(`/get_issues.php?${params}`);
     let issues = res.data || [];
@@ -2100,14 +2132,20 @@ async function loadIssues() {
       const q = search.toLowerCase();
       const isNumeric = !isNaN(search) && search.trim() !== '';
       issues = issues.filter(i =>
-        (isNumeric && String(i.id) === search.trim()) ||  // exact ID match first
+        (isNumeric && String(i.id) === search.trim()) ||
         String(i.id).includes(q) ||
         (i.description || '').toLowerCase().includes(q) ||
         (i.title       || '').toLowerCase().includes(q)
       );
     }
+    // Filter by assigned to
+    if (assignedTo) {
+      issues = issues.filter(i =>
+        (i.assigned_to_name || i.assignedToName || '').toLowerCase() === assignedTo.toLowerCase()
+      );
+    }
     _issuesCache = issues;
-    // Apply My Items / My Story filter
+    // Apply My Items / My Story / All Items / All User Story filter
     if (_filterMine === 'item' || _filterMine === 'story') {
       const myId = String(localStorage.getItem('userId') || '');
       _issuesCache = issues.filter(i => {
@@ -2117,6 +2155,10 @@ async function loadIssues() {
         if (_filterMine === 'story') return isMine && isStory;
         return isMine;
       });
+    } else if (_filterMine === 'all_items') {
+      _issuesCache = issues.filter(i => i.source !== 'user_story');
+    } else if (_filterMine === 'all_stories') {
+      _issuesCache = issues.filter(i => i.source === 'user_story');
     }
     // Sort by ID ascending when searching by number, otherwise keep default (newest first)
     if (search && !isNaN(search)) {
@@ -2169,9 +2211,11 @@ function toggleMineFilter(val) {
   _filterMine = val || 'all';
   const titleEl = document.getElementById('all-items-title');
   if (titleEl) {
-    if (_filterMine === 'item')        titleEl.textContent = 'MY ITEMS';
-    else if (_filterMine === 'story')  titleEl.textContent = 'MY USER STORY';
-    else                               titleEl.textContent = 'ALL ITEMS & USER STORY';
+    if (_filterMine === 'item')         titleEl.textContent = 'MY ITEMS';
+    else if (_filterMine === 'story')   titleEl.textContent = 'MY USER STORY';
+    else if (_filterMine === 'all_items')   titleEl.textContent = 'ALL ITEMS';
+    else if (_filterMine === 'all_stories') titleEl.textContent = 'ALL USER STORY';
+    else                                titleEl.textContent = 'ALL ITEMS & USER STORY';
   }
   loadIssues();
 }
@@ -2233,13 +2277,13 @@ async function viewIssue(id) {
           ${isStory ? `
           <!-- STORY HEADER -->
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <span style="font-family:'Roboto Mono',monospace;font-size:15px;font-weight:700;color:#cc0000;">#${issue.id}</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(74,100,206,0.12);color:#4a64ce;font-family:'Roboto Mono',monospace;letter-spacing:.06em;">STORY</span>
+            <span style="font-family:'Roboto Mono',monospace;font-size:14px;font-weight:700;color:#cc0000;">#${issue.id}</span>
+            <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(74,100,206,0.12);color:#4a64ce;font-family:'Roboto Mono',monospace;letter-spacing:.06em;">STORY</span>
           </div>
           <div style="font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Title</div>
           <h2 style="font-size:21px;font-weight:700;color:#1a1a1a;margin-bottom:4px;line-height:1.4;">${escHtml(issue.title || '—')}</h2>
           <div style="margin-bottom:14px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
             <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escHtml(issue.description || '—')}</div>
           </div>
           <div class="detail-meta">
@@ -2262,12 +2306,12 @@ async function viewIssue(id) {
           ` : `
           <!-- ITEM HEADER -->
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <span style="font-family:'Roboto Mono',monospace;font-size:15px;font-weight:700;color:#cc0000;">#${issue.id}</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(204,0,0,0.10);color:#cc0000;font-family:'Roboto Mono',monospace;letter-spacing:.06em;">ITEM</span>
+            <span style="font-family:'Roboto Mono',monospace;font-size:14px;font-weight:700;color:#cc0000;">#${issue.id}</span>
+            <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(204,0,0,0.10);color:#cc0000;font-family:'Roboto Mono',monospace;letter-spacing:.06em;">ITEM</span>
             ${issue.title ? `<span style="font-size:14px;font-weight:700;color:#1a1a1a;">${escHtml(issue.title)}</span>` : ''}
           </div>
           <div style="margin-bottom:14px;">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
             <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escHtml(issue.description || '—')}</div>
           </div>
           <div class="detail-meta">
@@ -2944,7 +2988,7 @@ function openEditModal(issue) {
 
   // Update modal title
   const editTitle = document.getElementById('edit-modal-title');
-  if (editTitle) editTitle.textContent = isStory ? 'Update User Story' : 'Update Issue';
+  if (editTitle) editTitle.textContent = isStory ? 'Update User Story' : 'Update Item';
 
   // Show/hide type-specific sections
   document.getElementById('edit-item-fields').style.display  = isStory ? 'none'  : 'block';
@@ -2955,7 +2999,12 @@ function openEditModal(issue) {
   document.getElementById('edit-particular').value      = issue.particular_id || '';
   document.getElementById('edit-module').value          = issue.module || '';
   document.getElementById('edit-priority').value        = issue.priority || '4-Medium';
-  document.getElementById('edit-date-identified').value = issue.dateIdentified || issue.date_identified || '';
+  // Fix date format for input[type=date] — needs YYYY-MM-DD
+  const rawDate = issue.dateIdentified || issue.date_identified || '';
+  const displayEl = document.getElementById('edit-date-display');
+  if (displayEl) displayEl.textContent = rawDate ? fmtDate(rawDate) : '—';
+  const hiddenDate = document.getElementById('edit-date-identified');
+  if (hiddenDate) hiddenDate.value = rawDate;
 
   // Populate Assigned To with all active users
   const sel = document.getElementById('edit-assigned-to');
@@ -3003,6 +3052,54 @@ function openEditModal(issue) {
   openModal('edit-issue-modal');
 }
 
+function renderEditAttachmentPreviews() {
+  const input = document.getElementById('edit-attachment');
+  const list  = document.getElementById('edit-attachment-list');
+  if (!input || !list) return;
+  list.innerHTML = '';
+  Array.from(input.files).forEach((file, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 8px;background:#f8f8f8;border-radius:6px;border:1px solid #eee;';
+    row.innerHTML = `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📎 ${file.name}</span>
+      <span style="color:#888;font-size:11px;">${(file.size/1024).toFixed(1)} KB</span>
+      <button type="button" onclick="removeEditAttachment(${i})" style="background:none;border:none;color:#cc0000;cursor:pointer;font-size:14px;padding:0 4px;">✕</button>`;
+    list.appendChild(row);
+  });
+}
+
+function removeEditAttachment(index) {
+  const input = document.getElementById('edit-attachment');
+  if (!input) return;
+  const dt = new DataTransfer();
+  Array.from(input.files).forEach((f, i) => { if (i !== index) dt.items.add(f); });
+  input.files = dt.files;
+  renderEditAttachmentPreviews();
+}
+
+let editFormComments = [];
+let editAccumulatedFiles = new DataTransfer();
+
+function addEditFormComment() {
+  const role     = localStorage.getItem('role');
+  const userId   = localStorage.getItem('userId');
+  const userName = localStorage.getItem('userName') || 'User';
+  const input    = document.getElementById('edit-comment-input');
+  const list     = document.getElementById('edit-comments-list');
+  if (!input || !input.value.trim()) return;
+  const text = input.value.trim();
+  editFormComments.push({ userId, userName, text });
+  // Render preview
+  const item = document.createElement('div');
+  item.style.cssText = 'background:#f8f8f8;border:1px solid #eee;border-radius:7px;padding:8px 12px;font-size:12px;';
+  item.innerHTML = `<div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+    <span style="font-weight:700;">${userName}</span>
+    <span style="color:#aaa;font-size:11px;">Just now</span>
+  </div>
+  <div style="white-space:pre-wrap;">${text}</div>`;
+  list.appendChild(item);
+  input.value = '';
+}
+
 async function saveEdit() {
   const isStory = document.getElementById('edit-story-fields').style.display !== 'none';
   const dto = {
@@ -3011,7 +3108,7 @@ async function saveEdit() {
     module:         document.getElementById('edit-module').value.trim()          || null,
     priority:       document.getElementById('edit-priority').value,
     assignedTo:     document.getElementById('edit-assigned-to').value            || null,
-    issuedBy:       document.getElementById('edit-issued-by').value              || null,
+    issuedBy:       parseInt(document.getElementById('edit-issued-by').value) || null,
     dateIdentified: document.getElementById('edit-date-identified').value        || null,
   };
   if (isStory) {
@@ -3066,9 +3163,33 @@ async function saveEdit() {
         editFormComments = [];
       }
       closeModal('edit-issue-modal');
-      toast('Issue updated!', 'success');
+      toast(isStory ? 'User Story updated!' : 'Issue updated!', 'success');
+      // Patch the cache entry directly so name shows immediately
+      const assignedUser = allUsers.find(u => String(u.id) === String(dto.assignedTo));
+      const particular = allParticulars.find(p => String(p.particular_id) === String(dto.particularId));
+      const issuedUser = allUsers.find(u => String(u.id) === String(dto.issuedBy));
+      if (_issuesCache) {
+        const idx = _issuesCache.findIndex(x => String(x.id) === String(currentIssueId));
+        if (idx !== -1) {
+          Object.assign(_issuesCache[idx], {
+            description:     dto.description,
+            module:          dto.module,
+            priority:        dto.priority,
+            state:           dto.state,
+            status:          dto.status,
+            issued_by:       dto.issuedBy,
+            issued_by_name:  issuedUser ? issuedUser.name : _issuesCache[idx].issued_by_name,
+            issuedByName:    issuedUser ? issuedUser.name : _issuesCache[idx].issuedByName,
+            assigned_to:     dto.assignedTo,
+            assignedToName:  assignedUser ? assignedUser.name : _issuesCache[idx].assignedToName,
+            particular_id:   dto.particularId,
+            particularName:  particular ? particular.name : _issuesCache[idx].particularName,
+            date_identified: dto.dateIdentified,
+          });
+        }
+      }
       viewIssue(currentIssueId);
-      loadDashboard(currentDashboardType);
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Update failed.', 'error');
@@ -3087,7 +3208,7 @@ async function deleteIssue(id) {
     if (res.success) {
       closeModal('issue-detail-modal');
       toast('Issue deleted.', 'info');
-      loadDashboard(currentDashboardType);
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Delete failed.', 'error');
@@ -3280,7 +3401,7 @@ async function submitNewIssue(e) {
       if (niList) niList.innerHTML = '';
       renderFormComments('ni');
       setTodayDate();
-      loadDashboard(currentDashboardType);
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       navigate('issues');
     } else {
       toast(res.message || 'Failed to create item.', 'error');
@@ -3390,7 +3511,7 @@ async function submitUserStory(e) {
       if (usList) usList.innerHTML = '';
       renderFormComments('us');
       setUserStoryDate();
-      loadDashboard(currentDashboardType);
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       navigate('issues');
     } else {
       toast(res.message || 'Failed to create user story.', 'error');
@@ -3574,7 +3695,7 @@ async function doImport() {
       </div>`;
       toast(`${importedCount} ${typeLabel}(ies) imported!`, 'success');
       clearFile();
-      loadDashboard(currentDashboardType);
+      loadDashboard(currentDashboardType); updateCombinedBadge();
     } else {
       result.innerHTML = `<div style="background:rgba(217,79,79,0.1);border:1px solid rgba(217,79,79,0.3);border-radius:8px;padding:14px 18px;color:var(--danger);">❌ No records imported. ${errors.length ? errors[0] : ''}</div>`;
       toast('Import failed.', 'error');
