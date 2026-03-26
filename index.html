@@ -1172,7 +1172,7 @@ select.form-control option { background: #ffffff; color: #333333; }
     <div class="modal-body" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
       <input type="hidden" id="part-id" />
       <div class="form-group">
-        <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Particular Name</label>
+        <label style="font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;">Particular Name <span style="color:#000">*</span></label>
         <input type="text" class="form-control" id="part-name" placeholder="e.g. MCC, SEC, Inventory…" style="margin-top:6px;" />
       </div>
       <div class="form-group">
@@ -1400,8 +1400,7 @@ select.form-control option { background: #ffffff; color: #333333; }
       <!-- DATE (common) -->
       <div class="form-group">
         <label>Date Identified</label>
-        <div id="edit-date-display" style="font-size:13px;color:#1a1a1a;padding:8px 0;"></div>
-        <input type="hidden" id="edit-date-identified" />
+        <input type="date" id="edit-date-identified" />
       </div>
 
       <!-- ATTACHMENT (common) -->
@@ -3001,10 +3000,17 @@ function openEditModal(issue) {
   document.getElementById('edit-priority').value        = issue.priority || '4-Medium';
   // Fix date format for input[type=date] — needs YYYY-MM-DD
   const rawDate = issue.dateIdentified || issue.date_identified || '';
-  const displayEl = document.getElementById('edit-date-display');
-  if (displayEl) displayEl.textContent = rawDate ? fmtDate(rawDate) : '—';
-  const hiddenDate = document.getElementById('edit-date-identified');
-  if (hiddenDate) hiddenDate.value = rawDate;
+  let isoDate = '';
+  if (rawDate) {
+    const d = new Date(rawDate);
+    if (!isNaN(d)) {
+      const yyyy = d.getFullYear();
+      const mm   = String(d.getMonth() + 1).padStart(2, '0');
+      const dd   = String(d.getDate()).padStart(2, '0');
+      isoDate = `${yyyy}-${mm}-${dd}`;
+    } else isoDate = rawDate;
+  }
+  document.getElementById('edit-date-identified').value = isoDate;
 
   // Populate Assigned To with all active users
   const sel = document.getElementById('edit-assigned-to');
