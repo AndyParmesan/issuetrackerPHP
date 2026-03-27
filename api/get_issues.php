@@ -9,6 +9,7 @@ require_once '../config/database.php';
 
 try {
     $state      = $_GET['state']      ?? '';
+    $status     = $_GET['status']     ?? '';
     $priority   = $_GET['priority']   ?? '';
     $search     = $_GET['search']     ?? '';
     $particular = $_GET['particular'] ?? '';
@@ -47,6 +48,10 @@ try {
     if (!empty($state)) {
         $sql .= " AND i.state = :state";
         $params[':state'] = $state;
+    }
+    if (!empty($status)) {
+        $sql .= " AND i.status = :status";
+        $params[':status'] = $status;
     }
     if (!empty($priority)) {
         $sql .= " AND i.priority = :priority";

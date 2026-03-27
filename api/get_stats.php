@@ -23,38 +23,48 @@ try {
     // Count by state
     $stmt = $pdo->query("SELECT state, COUNT(*) as cnt FROM issues $where GROUP BY state");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $counts = [];
+    $stateCounts = [];
     foreach ($rows as $row) {
-        $counts[$row['state']] = (int)$row['cnt'];
+        $stateCounts[$row['state']] = (int)$row['cnt'];
     }
-    $get = fn($k) => $counts[$k] ?? 0;
+
+    // Count by status (for progress-based counts)
+    $stmt = $pdo->query("SELECT status, COUNT(*) as cnt FROM issues $where GROUP BY status");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $statusCounts = [];
+    foreach ($rows as $row) {
+        $statusCounts[$row['status']] = (int)$row['cnt'];
+    }
+
+    $getState  = fn($k) => $stateCounts[$k]  ?? 0;
+    $getStatus = fn($k) => $statusCounts[$k] ?? 0;
 
     if ($type === 'stories' || $type === 'user_story') {
         $data = [
             'total'            => $total,
-            'draftCount'       => $get('Draft'),
-            'forReviewCount'   => $get('For Review'),
-            'approvedCount'    => $get('Approved'),
-            'inDevCount'       => $get('In Development'),
-            'testingCount'     => $get('For Testing'),
-            'qaFailedCount'    => $get('QA Failed'),
-            'forUatCount'      => $get('For UAT'),
-            'readyDeployCount' => $get('Ready for Deployment'),
-            'deployedCount'    => $get('Deployed'),
-            'closedCount'      => $get('Closed'),
+            'draftCount'       => $getState('Draft'),
+            'forReviewCount'   => $getState('For Review'),
+            'approvedCount'    => $getState('Approved'),
+            'inDevCount'       => $getState('In Development'),
+            'testingCount'     => $getState('For Testing'),
+            'qaFailedCount'    => $getState('QA Failed'),
+            'forUatCount'      => $getState('For UAT'),
+            'readyDeployCount' => $getState('Ready for Deployment'),
+            'deployedCount'    => $getState('Deployed'),
+            'closedCount'      => $getState('Closed'),
         ];
     } else {
         $data = [
             'total'              => $total,
-            'newCount'           => $get('New'),
-            'bugCount'           => $get('Bug'),
-            'openCount'          => $get('Open'),
-            'inProgressCount'    => $get('In Progress'),
-            'asDesignedCount'    => $get('As Designed'),
-            'enhancementCount'   => $get('Enhancement'),
-            'needsClarifCount'   => $get('Needs Clarification'),
-            'monitoringCount'    => $get('Monitoring'),
-            'closedCount'        => $get('Closed') + $get('Resolved'),
+            'newCount'           => $getState('New'),
+            'bugCount'           => $getState('Bug'),
+            'openCount'          => $getState('Open'),
+            'inProgressCount'    => $getState('In Progress') + $getStatus('In Progress'),
+            'asDesignedCount'    => $getState('As Designed'),
+            'enhancementCount'   => $getState('Enhancement'),
+            'needsClarifCount'   => $getState('Needs Clarification'),
+            'monitoringCount'    => $getState('Monitoring'),
+            'closedCount'        => $getState('Closed') + $getStatus('Closed') + $getStatus('Resolved'),
         ];
     }
 
