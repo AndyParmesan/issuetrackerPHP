@@ -428,7 +428,7 @@ select.form-control option { background: #ffffff; color: #333333; }
       <a class="nav-item active" id="nav-dashboard-items" onclick="navigateDashboard('items')" style="cursor:pointer;font-size:11.5px;opacity:0.85;padding-top:6px;padding-bottom:6px;">Items</a>
       <a class="nav-item" id="nav-dashboard-stories" onclick="navigateDashboard('stories')" style="cursor:pointer;font-size:11.5px;opacity:0.85;padding-top:6px;padding-bottom:6px;">User Stories</a>
     </div>
-    <a class="nav-item" data-view="issues"><span class="icon"></span> All Items & User Stories</a>
+    <a class="nav-item" data-view="issues"><span class="icon"></span> All Items & User Stories <span class="nav-badge" id="badge-open">–</span></a>
     <div class="nav-section-label">Management</div>
     <a class="nav-item" id="nav-new-issue" data-view="new-issue"><span class="icon"></span> New Item</a>
     <a class="nav-item" id="nav-user-story" data-view="user-story"><span class="icon"></span> User Story</a>
@@ -603,7 +603,7 @@ select.form-control option { background: #ffffff; color: #333333; }
         <div class="card-body" style="padding:0">
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>#</th><th>Type</th><th>Particular</th><th>Module</th><th>Description</th><th>State</th><th>Status</th><th>Priority</th><th>Points</th><th>Assigned To</th><th>Created By</th><th>Date</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Type</th><th>Particular</th><th>Module</th><th>Description</th><th>State</th><th>Status</th><th>Priority</th><th>Sprint</th><th>Assigned To</th><th>Created By</th><th>Date</th><th></th></tr></thead>
               <tbody id="issues-body"><tr><td colspan="13"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody>
             </table>
           </div>
@@ -655,7 +655,7 @@ select.form-control option { background: #ffffff; color: #333333; }
                   <option value="As Designed">As Designed</option>
                   <option value="Enhancement">Enhancement</option>
                   <option value="Needs Clarification">Needs Clarification</option>
-                  <option value="Monitoring">Monitoring</option>
+                  
                 </select>
               </div>
               <div class="form-group">
@@ -664,6 +664,7 @@ select.form-control option { background: #ffffff; color: #333333; }
                   <option value="New" selected>New</option>
                   <option value="Open">Open</option>
                   <option value="In Progress">In Progress</option>
+                  
                   <option value="Closed">Closed</option>
                 </select>
               </div>
@@ -713,18 +714,8 @@ select.form-control option { background: #ffffff; color: #333333; }
             <div class="form-group">
               <label>Comment <span style="color:var(--text-dim);font-size:11px;"></span></label>
               <div id="ni-comments-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
-              <div style="display:flex;gap:8px;align-items:flex-end;">
-                <div class="rte-wrap" style="flex:1;">
-                  <div class="rte-toolbar" data-target="ni-comment-input">
-                    <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-                    <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-                    <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-                    <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
-                    <div class="rte-btn-sep"></div>
-                    <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
-                  </div>
-                  <textarea id="ni-comment-input" class="rte-area" placeholder="Write a comment…" rows="2"></textarea>
-                </div>
+              <div style="display:flex;gap:8px;">
+                <textarea id="ni-comment-input" placeholder="Write a comment…" rows="2" style="flex:1;resize:none;"></textarea>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="addFormComment('ni')" style="align-self:flex-end;">+ Add</button>
               </div>
             </div>
@@ -905,18 +896,8 @@ select.form-control option { background: #ffffff; color: #333333; }
             <div class="form-group" style="margin-bottom:20px;">
               <label>Comment <span style="color:var(--text-dim);font-size:11px;"></span></label>
               <div id="us-comments-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
-              <div style="display:flex;gap:8px;align-items:flex-end;">
-                <div class="rte-wrap" style="flex:1;">
-                  <div class="rte-toolbar" data-target="us-comment-input">
-                    <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-                    <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-                    <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-                    <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
-                    <div class="rte-btn-sep"></div>
-                    <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
-                  </div>
-                  <textarea id="us-comment-input" class="rte-area" placeholder="Write a comment…" rows="2"></textarea>
-                </div>
+              <div style="display:flex;gap:8px;">
+                <textarea id="us-comment-input" placeholder="Write a comment…" rows="2" style="flex:1;resize:none;"></textarea>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="addFormComment('us')" style="align-self:flex-end;">+ Add</button>
               </div>
             </div>
@@ -1380,6 +1361,7 @@ select.form-control option { background: #ffffff; color: #333333; }
               <option value="New">New</option>
               <option value="Open">Open</option>
               <option value="In Progress">In Progress</option>
+              <option value="Monitoring">Monitoring</option>
               <option value="Closed">Closed</option>
             </select>
           </div>
@@ -1493,18 +1475,8 @@ select.form-control option { background: #ffffff; color: #333333; }
       <div class="form-group">
         <label>Comment</label>
         <div id="edit-comments-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
-        <div style="display:flex;gap:8px;align-items:flex-end;">
-          <div class="rte-wrap" style="flex:1;">
-            <div class="rte-toolbar" data-target="edit-comment-input">
-              <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
-              <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
-              <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-              <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
-              <div class="rte-btn-sep"></div>
-              <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
-            </div>
-            <textarea id="edit-comment-input" class="rte-area" placeholder="Write a comment…" rows="2"></textarea>
-          </div>
+        <div style="display:flex;gap:8px;">
+          <textarea id="edit-comment-input" placeholder="Write a comment…" rows="2" style="flex:1;resize:none;"></textarea>
           <button type="button" class="btn btn-ghost btn-sm" onclick="addEditFormComment()" style="align-self:flex-end;">+ Add</button>
         </div>
       </div>
@@ -1665,7 +1637,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadUsers();
   navigateDashboard('items');
   setTodayDate();
-  
+  updateCombinedBadge();
 
   document.querySelectorAll('.nav-item[data-view]').forEach(item => {
     item.addEventListener('click', () => navigate(item.dataset.view));
@@ -1974,6 +1946,18 @@ function navigateDashboard(type) {
   loadDashboard(type);
 }
 
+async function updateCombinedBadge() {
+  try {
+    const [rItems, rStories] = await Promise.all([
+      apiFetch('/get_stats.php?type=items'),
+      apiFetch('/get_stats.php?type=stories')
+    ]);
+    const totalItems   = rItems?.data?.total   || 0;
+    const totalStories = rStories?.data?.total || 0;
+    const el = document.getElementById('badge-open');
+    if (el) el.textContent = totalItems + totalStories;
+  } catch { }
+}
 
 async function loadDashboard(type) {
   type = type || currentDashboardType || 'items';
@@ -1993,7 +1977,7 @@ async function loadDashboard(type) {
       document.getElementById('si-needsclarif').textContent = d.needsClarifCount   || 0;
       document.getElementById('si-monitoring').textContent  = d.monitoringCount    || 0;
       document.getElementById('si-closed').textContent      = d.closedCount        || 0;
-      
+      updateCombinedBadge();
       renderDashboardChart('chart-items-priority', d.byPriority, 'Items by Priority');
       loadRecentItems();
     } else {
@@ -2008,7 +1992,7 @@ async function loadDashboard(type) {
       document.getElementById('ss-readydeploy').textContent= d.readyDeployCount || 0;
       document.getElementById('ss-deployed').textContent   = d.deployedCount    || 0;
       document.getElementById('ss-closed').textContent     = d.closedCount      || 0;
-      
+      updateCombinedBadge();
       renderDashboardChart('chart-stories-priority', d.byPriority, 'Stories by Priority');
       loadRecentStories();
     }
@@ -2209,10 +2193,9 @@ async function loadIssues() {
   const search     = document.getElementById('global-search')?.value.trim() || '';
   const assignedTo = document.getElementById('filter-assigned-to')?.value  || '';
 
-  // Only true status column values (schema: New/In Progress/Fixed/Resolved/Closed)
-  // Open and Monitoring live in the state column, not status
-  const statusOnlyValues = ['In Progress','Fixed','Resolved','Closed'];
-  const isStatusFilter = statusOnlyValues.includes(stateVal);
+  // Status values live in the status column, not state
+  const statusValues = ['New','Open','In Progress','Monitoring','Closed'];
+  const isStatusFilter = statusValues.includes(stateVal);
   const state  = isStatusFilter ? '' : stateVal;
   const status = isStatusFilter ? stateVal : '';
 
@@ -2335,9 +2318,9 @@ function allIssueRow(i) {
     <td style="font-size:12px;">${escHtml(i.module||'—')}</td>
     <td class="td-desc">${escHtml(i.title || i.description)}</td>
     <td>${stateBadge(i.state)}</td>
-    <td>${statusBadge(i.status || (i.state === 'Open' ? 'Open' : ''))}</td>
+    <td>${statusBadge(i.status)}</td>
     <td>${priBadge(i.priority)}</td>
-    <td style="font-size:11px;color:#888;">${i.story_points ? `<span class="sp-badge">${i.story_points}</span>` : '—'}</td>
+    <td style="font-size:11px;color:#888;">${escHtml(i.iteration_path||'—')}</td>
     <td style="font-size:12px;">${escHtml(i.assigned_to_name||'—')}</td>
     <td style="font-size:12px;">${escHtml(i.issued_by_name||'—')}</td>
     <td class="td-date">${fmtDate(i.date_identified)}</td>
@@ -3235,6 +3218,7 @@ function addEditFormComment() {
 // ASSIGNED TO ME
 // ============================================================
 
+
 async function saveEdit() {
   const isStory = document.getElementById('edit-story-fields').style.display !== 'none';
   const dto = {
@@ -3332,7 +3316,7 @@ async function saveEdit() {
         }
       }
       viewIssue(currentIssueId);
-      loadDashboard(currentDashboardType); 
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Update failed.', 'error');
@@ -3351,7 +3335,7 @@ async function deleteIssue(id) {
     if (res.success) {
       closeModal('issue-detail-modal');
       toast('Issue deleted.', 'info');
-      loadDashboard(currentDashboardType); 
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Delete failed.', 'error');
@@ -3544,7 +3528,7 @@ async function submitNewIssue(e) {
       if (niList) niList.innerHTML = '';
       renderFormComments('ni');
       setTodayDate();
-      loadDashboard(currentDashboardType); 
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       navigate('issues');
     } else {
       toast(res.message || 'Failed to create item.', 'error');
@@ -3654,7 +3638,7 @@ async function submitUserStory(e) {
       if (usList) usList.innerHTML = '';
       renderFormComments('us');
       setUserStoryDate();
-      loadDashboard(currentDashboardType); 
+      loadDashboard(currentDashboardType); updateCombinedBadge();
       navigate('issues');
     } else {
       toast(res.message || 'Failed to create user story.', 'error');
@@ -3840,7 +3824,7 @@ async function doImport() {
       </div>`;
       toast(`${importedCount} ${typeLabel}(ies) imported!`, 'success');
       clearFile();
-      loadDashboard(currentDashboardType); 
+      loadDashboard(currentDashboardType); updateCombinedBadge();
     } else {
       result.innerHTML = `<div style="background:rgba(217,79,79,0.1);border:1px solid rgba(217,79,79,0.3);border-radius:8px;padding:14px 18px;color:var(--danger);">❌ No records imported. ${errors.length ? errors[0] : ''}</div>`;
       toast('Import failed.', 'error');
