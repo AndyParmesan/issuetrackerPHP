@@ -2382,8 +2382,7 @@ async function viewIssue(id) {
           <h2 style="font-size:21px;font-weight:700;color:#1a1a1a;margin-bottom:4px;line-height:1.4;">${escHtml(issue.title || '—')}</h2>
           <div style="margin-bottom:14px;">
             <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
-            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;">${issue.description || '—'}</div>
-            <div class="meta-row"><span class="meta-key">Story Points</span><span class="meta-val">${issue.storyPoints ? `<span class="sp-badge">${issue.storyPoints}</span> <span style="font-size:11px;color:#888;">${spHours(issue.storyPoints)}</span>` : '—'}</span></div>
+            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;white-space:pre-wrap;">${issue.description || '—'}</div>            <div class="meta-row"><span class="meta-key">Story Points</span><span class="meta-val">${issue.storyPoints ? `<span class="sp-badge">${issue.storyPoints}</span> <span style="font-size:11px;color:#888;">${spHours(issue.storyPoints)}</span>` : '—'}</span></div>
             <div class="meta-row"><span class="meta-key">Sprint</span><span class="meta-val">${escHtml(issue.iterationPath||'—')}</span></div>
             <div class="meta-row"><span class="meta-key">Particular</span><span class="meta-val">${escHtml(issue.particular_name||issue.particularName||'—')}</span></div>
             <div class="meta-row"><span class="meta-key">Module</span><span class="meta-val">${escHtml(issue.module||'—')}</span></div>
@@ -2406,8 +2405,7 @@ async function viewIssue(id) {
           </div>
           <div style="margin-bottom:14px;">
             <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
-            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;">${issue.description || '—'}</div>
-            <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
+            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;white-space:pre-wrap;">${issue.description || '—'}</div>            <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
             <div class="meta-row"><span class="meta-key">Particular</span><span class="meta-val">${escHtml(issue.particular_name||issue.particularName||'—')}</span></div>
             <div class="meta-row"><span class="meta-key">Module</span><span class="meta-val">${escHtml(issue.module||'—')}</span></div>
             <div class="meta-row"><span class="meta-key">Assigned To</span><span class="meta-val">${escHtml(issue.assignedToName||'Unassigned')}</span></div>
@@ -3147,8 +3145,7 @@ function openEditModal(issue) {
     });
     issuedSel.value = issue.issued_by || issue.issuedBy || '';
   }
-  rteClear('edit-description');
-  rteClear('edit-acceptance-criteria');
+  
   // Reset comment/attachment fields
   document.getElementById('edit-comment-input').value = '';
   document.getElementById('edit-comments-list').innerHTML = '';
@@ -3163,6 +3160,8 @@ function openEditModal(issue) {
     document.getElementById('edit-story-points').value        = issue.storyPoints || issue.story_points || '';
     document.getElementById('edit-iteration-path').value      = issue.iterationPath || issue.iteration_path || '';
     document.getElementById('edit-story-state').value         = issue.state || 'Draft';
+    rteClear('edit-description');
+    rteClear('edit-acceptance-criteria');
     rteSet('edit-acceptance-criteria', issue.acceptanceCriteria || issue.acceptance_criteria || '');
   } else {
     document.getElementById('edit-state').value  = issue.state  || 'Bug';
