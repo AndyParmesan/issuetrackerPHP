@@ -403,8 +403,7 @@ select.form-control option { background: #ffffff; color: #333333; }
 .rte-btn:hover { background: #eee; border-color: #ccc; }
 .rte-btn.active { background: #cc0000; color: #fff; border-color: #cc0000; }
 .rte-btn-sep { width: 1px; background: #ddd; margin: 2px 4px; }
-.rte-editor { border: none; outline: none; min-height: 80px; padding: 8px 10px; font-size: 13px; font-family: 'Raleway', sans-serif; width: 100%; overflow-y: auto; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
-.rte-editor:empty:before { content: attr(data-placeholder); color: #aaa; pointer-events: none; }
+.rte-area { border: none !important; outline: none !important; box-shadow: none !important; border-radius: 0 !important; resize: vertical; min-height: 80px; padding: 8px 10px; font-size: 13px; font-family: 'Raleway', sans-serif; width: 100%; }
 </style>
 </head>
 <body>
@@ -502,7 +501,7 @@ select.form-control option { background: #ffffff; color: #333333; }
         <div class="card-header">
           <div class="card-title">Recent Items</div>
           <div class="sep"></div>
-          <button class="btn btn-ghost btn-sm" onclick="viewAllItems()">View All →</button>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('issues')">View All →</button>
         </div>
         <div class="card-body" style="padding:0">
           <div class="table-wrapper">
@@ -542,7 +541,12 @@ select.form-control option { background: #ffffff; color: #333333; }
         <div class="card-header">
           <div class="card-title">Recent User Stories</div>
           <div class="sep"></div>
-          <button class="btn btn-ghost btn-sm" onclick="viewAllStories()">View All →</button>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('issues')">View All →</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>#</th><th>Title</th><th>Particular</th><th>State</th><th>Priority</th><th>Points</th><th>Sprint</th><th>Assigned To</th><th>Date</th><th></th></tr></thead>
               <tbody id="recent-stories-body"><tr><td colspan="10"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody>
             </table>
           </div>
@@ -636,9 +640,9 @@ select.form-control option { background: #ffffff; color: #333333; }
                   <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
                   <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
                   <div class="rte-btn-sep"></div>
-                  <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
+                  <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
                 </div>
-                <div id="ni-desc" class="rte-editor" contenteditable="true" data-placeholder="Describe the issue in detail…" style="min-height:80px;"></div>
+                <textarea id="ni-desc" class="rte-area" placeholder="Describe the issue in detail…" rows="4" required></textarea>
               </div>
             </div>
 
@@ -798,9 +802,9 @@ select.form-control option { background: #ffffff; color: #333333; }
                   <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
                   <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
                   <div class="rte-btn-sep"></div>
-                  <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
+                  <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
                 </div>
-                <div id="us-desc" class="rte-editor" contenteditable="true" data-placeholder="Describe the user story in detail…" style="min-height:80px;"></div>
+                <textarea id="us-desc" class="rte-area" placeholder="Describe the user story in detail…" rows="4" required></textarea>
               </div>
             </div>
 
@@ -866,9 +870,9 @@ select.form-control option { background: #ffffff; color: #333333; }
                   <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
                   <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
                   <div class="rte-btn-sep"></div>
-                  <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
+                  <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
                 </div>
-                <div id="us-acceptance-criteria" class="rte-editor" contenteditable="true" data-placeholder="e.g. User can click Export button on Inventory page" style="min-height:100px;"></div>
+                <textarea id="us-acceptance-criteria" class="rte-area" placeholder="e.g.&#10;- User can click Export button on Inventory page&#10;- File downloads as .xlsx with correct headers&#10;- Empty inventory shows a friendly message" rows="5"></textarea>
               </div>
             </div>
 
@@ -1328,9 +1332,9 @@ select.form-control option { background: #ffffff; color: #333333; }
             <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
             <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
             <div class="rte-btn-sep"></div>
-            <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
+            <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
           </div>
-          <div id="edit-description" class="rte-editor" contenteditable="true" data-placeholder="Describe the issue…" style="min-height:70px;"></div>
+          <textarea id="edit-description" class="rte-area" rows="3" placeholder="Describe the issue…"></textarea>
         </div>
       </div>
 
@@ -1414,9 +1418,9 @@ select.form-control option { background: #ffffff; color: #333333; }
               <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
               <button type="button" class="rte-btn" data-cmd="strikethrough" title="Strikethrough"><s>S</s></button>
               <div class="rte-btn-sep"></div>
-              <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
+              <button type="button" class="rte-btn" data-cmd="bullet" title="Bullet List">• List</button>
             </div>
-            <div id="edit-acceptance-criteria" class="rte-editor" contenteditable="true" data-placeholder="Conditions for story completion…" style="min-height:70px;"></div>
+            <textarea id="edit-acceptance-criteria" class="rte-area" rows="3" placeholder="Conditions for story completion…" style="padding:5px 8px;font-size:12px;"></textarea>
           </div>
         </div>
       </div>
@@ -1656,23 +1660,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 // NAVIGATION
 // ============================================================
-function viewAllItems() {
-  // Set filter before navigate so loadIssues picks it up
-  _filterMine = 'all_items';
-  navigate('issues');
-  // Re-set after navigate resets it, then reload
-  _filterMine = 'all_items';
-  document.getElementById('filter-mine-btn').value = 'all_items';
-  loadIssues();
-}
-function viewAllStories() {
-  _filterMine = 'all_stories';
-  navigate('issues');
-  _filterMine = 'all_stories';
-  document.getElementById('filter-mine-btn').value = 'all_stories';
-  loadIssues();
-}
-
 function navigate(view) {
   if (view === 'dashboard') { navigateDashboard(currentDashboardType || 'items'); return; }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -2131,7 +2118,7 @@ async function loadRecentItems() {
         <td class="td-id">#${i.id}</td>
         <td style="font-size:12px;">${escHtml(i.particular_name||i.dashboard||'—')}</td>
         <td style="font-size:12px;">${escHtml(i.module||'—')}</td>
-        <td class="td-desc">${escHtml((i.description||'').replace(/<[^>]*>/g,''))}</td>
+        <td class="td-desc">${escHtml(i.description)}</td>
         <td>${stateBadge(i.state)}</td>
         <td>${statusBadge(i.status)}</td>
         <td>${priBadge(i.priority)}</td>
@@ -2325,7 +2312,7 @@ function allIssueRow(i) {
     <td><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;font-family:'Roboto Mono',monospace;background:${typeBg};color:${typeColor};letter-spacing:0.05em;">${issueType}</span></td>
     <td style="font-size:12px;white-space:nowrap;">${escHtml(i.particular_name||i.dashboard||'—')}</td>
     <td style="font-size:12px;">${escHtml(i.module||'—')}</td>
-    <td class="td-desc">${escHtml((i.title || i.description||'').replace(/<[^>]*>/g,''))}</td>
+    <td class="td-desc">${escHtml(i.title || i.description)}</td>
     <td>${stateBadge(i.state)}</td>
     <td>${statusBadge(i.status)}</td>
     <td>${priBadge(i.priority)}</td>
@@ -2379,7 +2366,11 @@ async function viewIssue(id) {
           <h2 style="font-size:21px;font-weight:700;color:#1a1a1a;margin-bottom:4px;line-height:1.4;">${escHtml(issue.title || '—')}</h2>
           <div style="margin-bottom:14px;">
             <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
-            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;">${issue.description || '—'}</div>
+            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escHtml(issue.description || '—')}</div>
+          </div>
+          <div class="detail-meta">
+            <div class="meta-row"><span class="meta-key">State</span><span class="meta-val">${stateBadge(issue.state)}</span></div>
+            <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
             <div class="meta-row"><span class="meta-key">Story Points</span><span class="meta-val">${issue.storyPoints ? `<span class="sp-badge">${issue.storyPoints}</span> <span style="font-size:11px;color:#888;">${spHours(issue.storyPoints)}</span>` : '—'}</span></div>
             <div class="meta-row"><span class="meta-key">Sprint</span><span class="meta-val">${escHtml(issue.iterationPath||'—')}</span></div>
             <div class="meta-row"><span class="meta-key">Particular</span><span class="meta-val">${escHtml(issue.particular_name||issue.particularName||'—')}</span></div>
@@ -2391,7 +2382,7 @@ async function viewIssue(id) {
           <div style="margin-top:14px;">
             <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">✅ Acceptance Criteria</div>
             ${issue.acceptanceCriteria
-              ? `<div class="ac-box">${issue.acceptanceCriteria}</div>`
+              ? `<div class="ac-box">${escHtml(issue.acceptanceCriteria)}</div>`
               : `<div class="ac-empty">No acceptance criteria defined.</div>`}
           </div>
           ` : `
@@ -2403,7 +2394,11 @@ async function viewIssue(id) {
           </div>
           <div style="margin-bottom:14px;">
             <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
-            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;">${issue.description || '—'}</div>
+            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escHtml(issue.description || '—')}</div>
+          </div>
+          <div class="detail-meta">
+            <div class="meta-row"><span class="meta-key">State</span><span class="meta-val">${stateBadge(issue.state)}</span></div>
+            <div class="meta-row"><span class="meta-key">Status</span><span class="meta-val">${statusBadge(issue.status)}</span></div>
             <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
             <div class="meta-row"><span class="meta-key">Particular</span><span class="meta-val">${escHtml(issue.particular_name||issue.particularName||'—')}</span></div>
             <div class="meta-row"><span class="meta-key">Module</span><span class="meta-val">${escHtml(issue.module||'—')}</span></div>
@@ -3103,7 +3098,7 @@ function openEditModal(issue) {
   document.getElementById('edit-story-fields').style.display = isStory ? 'block' : 'none';
 
   // Common fields
-  rteSet('edit-description', issue.description || '');
+  document.getElementById('edit-description').value     = issue.description || '';
   document.getElementById('edit-particular').value      = issue.particular_id || '';
   document.getElementById('edit-module').value          = issue.module || '';
   document.getElementById('edit-priority').value        = issue.priority || '4-Medium';
@@ -3144,8 +3139,6 @@ function openEditModal(issue) {
     });
     issuedSel.value = issue.issued_by || issue.issuedBy || '';
   }
-  rteClear('edit-description');
-  rteClear('edit-acceptance-criteria');
   // Reset comment/attachment fields
   document.getElementById('edit-comment-input').value = '';
   document.getElementById('edit-comments-list').innerHTML = '';
@@ -3160,7 +3153,7 @@ function openEditModal(issue) {
     document.getElementById('edit-story-points').value        = issue.storyPoints || issue.story_points || '';
     document.getElementById('edit-iteration-path').value      = issue.iterationPath || issue.iteration_path || '';
     document.getElementById('edit-story-state').value         = issue.state || 'Draft';
-    rteSet('edit-acceptance-criteria', issue.acceptanceCriteria || issue.acceptance_criteria || '');
+    document.getElementById('edit-acceptance-criteria').value = issue.acceptanceCriteria || issue.acceptance_criteria || '';
   } else {
     document.getElementById('edit-state').value  = issue.state  || 'Bug';
     document.getElementById('edit-status').value = issue.status || 'New';
@@ -3225,7 +3218,7 @@ function addEditFormComment() {
 async function saveEdit() {
   const isStory = document.getElementById('edit-story-fields').style.display !== 'none';
   const dto = {
-    description:    rteGet('edit-description') || null,
+    description:    document.getElementById('edit-description').value.trim()     || null,
     particularId:   document.getElementById('edit-particular').value             || null,
     module:         document.getElementById('edit-module').value.trim()          || null,
     priority:       document.getElementById('edit-priority').value,
@@ -3238,7 +3231,7 @@ async function saveEdit() {
     dto.storyPoints        = document.getElementById('edit-story-points').value               || null;
     dto.iterationPath      = document.getElementById('edit-iteration-path').value             || null;
     dto.state              = document.getElementById('edit-story-state').value                || 'Draft';
-    dto.acceptanceCriteria = rteGet('edit-acceptance-criteria') || null;
+    dto.acceptanceCriteria = document.getElementById('edit-acceptance-criteria').value        || null;
   } else {
     dto.state  = document.getElementById('edit-state').value  || 'Bug';
     dto.status = document.getElementById('edit-status').value || 'New';
@@ -3485,10 +3478,11 @@ async function submitNewIssue(e) {
     niParticular.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
     niErrors.push('Particular');
   } else { niParticular.style.borderColor = ''; niParticular.style.boxShadow = ''; }
-  if (!rteGet('ni-desc').trim()) {
-    if (niDesc) { niDesc.style.outline = '2px solid #cc0000'; niDesc.style.boxShadow = '0 0 0 3px rgba(204,0,0,0.15)'; }
+  if (!niDesc.value.trim()) {
+    niDesc.style.borderColor = '#cc0000';
+    niDesc.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
     niErrors.push('Description');
-  } else { if (niDesc) { niDesc.style.outline = ''; niDesc.style.boxShadow = ''; } }
+  } else { niDesc.style.borderColor = ''; niDesc.style.boxShadow = ''; }
   if (niErrors.length > 0) {
     toast('Required: ' + niErrors.join(', '), 'error');
     btn.disabled = false; btn.textContent = 'Create'; return;
@@ -3497,7 +3491,7 @@ async function submitNewIssue(e) {
   const dto = {
     particularId:   parseInt(document.getElementById('ni-particular').value) || null,
     module:         document.getElementById('ni-module').value.trim() || null,
-    description:    rteGet('ni-desc'),
+    description:    document.getElementById('ni-desc').value.trim(),
     state:          document.getElementById('ni-state').value || 'New',
     status: document.getElementById('ni-status').value || 'New',
     priority:       document.getElementById('ni-priority').value || '4-Medium',
@@ -3523,7 +3517,6 @@ async function submitNewIssue(e) {
       toast('Item created successfully!', 'success');
       if (formComments.ni.length > 0) await postFormComments('ni', res.data.id);
       document.getElementById('new-issue-form').reset();
-      rteClear('ni-desc');
       accumulatedFiles = new DataTransfer();
       const niInput = document.getElementById('ni-attachment');
       if (niInput) { niInput.value = ''; niInput.files = accumulatedFiles.files; }
@@ -3572,37 +3565,27 @@ async function submitUserStory(e) {
   // Clear previous highlights
   requiredFields.forEach(f => {
     const el = document.getElementById(f.id);
-    if (el) { el.style.borderColor = ''; el.style.boxShadow = ''; el.style.outline = ''; }
+    if (el) { el.style.borderColor = ''; el.style.boxShadow = ''; }
   });
-
-  // Helper to get value from either input/select or contenteditable div
-  const getVal = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return '';
-    if (el.isContentEditable) return el.innerText.trim();
-    return (el.value || '').trim();
-  };
 
   // Check each field
   const missing = [];
   requiredFields.forEach(f => {
     const el = document.getElementById(f.id);
     if (!el) return;
-    if (!getVal(f.id)) {
+    if (!el.value.trim()) {
       missing.push(f.label);
-      if (el.isContentEditable) {
-        el.style.outline = '2px solid #cc0000';
-        el.style.boxShadow = '0 0 0 3px rgba(204,0,0,0.15)';
-      } else {
-        el.style.borderColor = '#cc0000';
-        el.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
-      }
+      el.style.borderColor = '#cc0000';
+      el.style.boxShadow   = '0 0 0 3px rgba(204,0,0,0.15)';
     }
   });
 
   if (missing.length > 0) {
     toast('Required: ' + missing.join(', '), 'error');
-    const firstMissing = requiredFields.find(f => !getVal(f.id));
+    const firstMissing = requiredFields.find(f => {
+      const el = document.getElementById(f.id);
+      return el && !el.value.trim();
+    });
     if (firstMissing) document.getElementById(firstMissing.id).scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
@@ -3615,12 +3598,12 @@ async function submitUserStory(e) {
     title:              document.getElementById('us-title').value.trim(),
     particularId:       parseInt(document.getElementById('us-particular').value) || null,
     module:             document.getElementById('us-module').value.trim() || null,
-    description:        rteGet('us-desc'),
+    description:        document.getElementById('us-desc').value.trim(),
     state:              document.getElementById('us-state').value                     || 'Draft',
     priority:           document.getElementById('us-priority').value                  || '4-Medium',
     storyPoints:        document.getElementById('us-story-points').value              || null,
     iterationPath:      document.getElementById('us-iteration-path').value || null,
-    acceptanceCriteria: rteGet('us-acceptance-criteria') || null,
+    acceptanceCriteria: document.getElementById('us-acceptance-criteria').value.trim()|| null,
     issuedBy:           parseInt(document.getElementById('us-issued-by').value)       || null,
     assignedTo:         parseInt(document.getElementById('us-assigned-to').value)     || null,
     dateIdentified:     document.getElementById('us-date').value,
@@ -3643,8 +3626,6 @@ async function submitUserStory(e) {
       toast('User Story created successfully!', 'success');
       if (formComments.us.length > 0) await postFormComments('us', res.data.id);
       document.getElementById('user-story-form').reset();
-      rteClear('us-desc');
-      rteClear('us-acceptance-criteria');
       accumulatedUSFiles = new DataTransfer();
       const usInput = document.getElementById('us-attachment');
       if (usInput) { usInput.value = ''; usInput.files = accumulatedUSFiles.files; }
@@ -4207,48 +4188,56 @@ function formatSize(bytes) {
 }
 
 // ============================================================
-// RICH TEXT TOOLBAR — uses execCommand for real formatting
+// RICH TEXT TOOLBAR
 // ============================================================
-document.addEventListener('mousedown', function(e) {
-  const btn = e.target.closest('.rte-btn');
-  if (!btn) return;
-  // Prevent losing focus on the editor
-  e.preventDefault();
-});
-
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('.rte-btn');
   if (!btn) return;
   e.preventDefault();
   const toolbar = btn.closest('.rte-toolbar');
   const targetId = toolbar?.dataset.target;
-  const editor = targetId ? document.getElementById(targetId) : null;
-  if (!editor || !editor.isContentEditable) return;
-  editor.focus();
+  const ta = targetId ? document.getElementById(targetId) : null;
+  if (!ta) return;
+
   const cmd = btn.dataset.cmd;
-  document.execCommand(cmd, false, null);
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const selected = ta.value.substring(start, end);
+  let before = ta.value.substring(0, start);
+  let after  = ta.value.substring(end);
+
+  const wrapMap = { bold: '**', italic: '_', underline: '__', strikethrough: '~~' };
+
+  if (cmd === 'bullet') {
+    if (selected) {
+      const bulleted = selected.split('\n').map(l => l.startsWith('- ') ? l : '- ' + l).join('\n');
+      ta.value = before + bulleted + after;
+      ta.selectionStart = start;
+      ta.selectionEnd   = start + bulleted.length;
+    } else {
+      const insert = (before.endsWith('\n') || before === '') ? '- ' : '\n- ';
+      ta.value = before + insert + after;
+      ta.selectionStart = ta.selectionEnd = start + insert.length;
+    }
+  } else {
+    const wrap = wrapMap[cmd];
+    if (!wrap) return;
+    if (selected) {
+      const isWrapped = selected.startsWith(wrap) && selected.endsWith(wrap) && selected.length > wrap.length * 2;
+      const replacement = isWrapped
+        ? selected.slice(wrap.length, selected.length - wrap.length)
+        : wrap + selected + wrap;
+      ta.value = before + replacement + after;
+      ta.selectionStart = start;
+      ta.selectionEnd   = start + replacement.length;
+    } else {
+      ta.value = before + wrap + wrap + after;
+      ta.selectionStart = ta.selectionEnd = start + wrap.length;
+    }
+  }
+  ta.focus();
+  ta.dispatchEvent(new Event('input'));
 });
-
-// Helper: get innerHTML of an RTE editor by ID
-function rteGet(id) {
-  const el = document.getElementById(id);
-  if (!el) return '';
-  return el.innerHTML || '';
-}
-
-// Helper: set innerHTML of an RTE editor by ID
-function rteSet(id, html) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = html || '';
-}
-
-// Helper: clear an RTE editor
-function rteClear(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = '';
-}
 </script>
 </body>
 </html>
