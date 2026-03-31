@@ -542,13 +542,16 @@ select.form-control option { background: #ffffff; color: #333333; }
         <div class="card-header">
           <div class="card-title">Recent User Stories</div>
           <div class="sep"></div>
-          <button class="btn btn-ghost btn-sm" onclick="viewAllStories()">View All →</button>
-              <tbody id="recent-stories-body"><tr><td colspan="10"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+          <button class="btn btn-ghost btn-sm" onclick="viewAllStories()">View All →</button> 
+        </div> 
+        <div class="card-body" style="padding:0"> <div class="table-wrapper"> 
+          <table> 
+            <thead><tr><th>#</th><th>Title</th><th>Particular</th><th>State</th><th>Priority</th><th>Points</th><th>Sprint</th><th>Assigned To</th><th>Date</th><th></th></tr></thead> <tbody id="recent-stories-body"><tr><td colspan="10"><div class="empty-state"><div class="loader"></div></div></td></tr></tbody> 
+          </table> 
+        </div> 
+      </div> 
+    </div> 
+        </div> 
 
     <!-- ===== ALL ISSUES ===== -->
     <div class="view" id="view-issues">
