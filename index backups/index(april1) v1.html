@@ -126,7 +126,6 @@ body.modal-open { overflow: hidden; }
 .stat-card.c-draft   { border-color: #888888; background: rgba(136,136,136,0.07); }
 .stat-card.c-forreview   { border-color: #4a9ece; background: rgba(74,158,206,0.07); }
 .stat-card.c-approved    { border-color: #2e9e6b; background: rgba(46,158,107,0.07); }
-.stat-card.c-fordev      { border-color: #7a50ce; background: rgba(122,80,206,0.07); }
 .stat-card.c-indev       { border-color: #4a64ce; background: rgba(74,100,206,0.07); }
 .stat-card.c-fortesting  { border-color: #e07b20; background: rgba(224,123,32,0.07); }
 .stat-card.c-qafailed    { border-color: #d94f4f; background: rgba(217,79,79,0.07); }
@@ -154,7 +153,6 @@ body.modal-open { overflow: hidden; }
 .c-draft   .stat-label { color: #888888; }
 .c-forreview   .stat-label { color: #4a9ece; }
 .c-approved    .stat-label { color: #2e9e6b; }
-.c-fordev      .stat-label { color: #7a50ce; }
 .c-indev       .stat-label { color: #4a64ce; }
 .c-fortesting  .stat-label { color: #e07b20; }
 .c-qafailed    .stat-label { color: #d94f4f; }
@@ -181,7 +179,7 @@ body.modal-open { overflow: hidden; }
   background: var(--card-bg);
 }
 #stories-carousel {
-  grid-template-columns: repeat(6, minmax(140px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
 }
 .stat-carousel::-webkit-scrollbar { display: none; }
 .stat-carousel .stat-card { width: auto; cursor: pointer; }
@@ -230,7 +228,6 @@ tbody td { padding: 11px 14px; color: var(--text-main); vertical-align: middle; 
 .badge-draft      { background: rgba(150,150,150,0.15); color: #888; border: 1px solid rgba(150,150,150,0.3); }
 .badge-forreview  { background: rgba(74,158,206,0.15);  color: #4a9ece; border: 1px solid rgba(74,158,206,0.3); }
 .badge-approved   { background: rgba(46,158,107,0.15);  color: var(--success); border: 1px solid rgba(46,158,107,0.3); }
-.badge-fordev     { background: rgba(122,80,206,0.15);  color: #7a50ce; border: 1px solid rgba(122,80,206,0.3); }
 .badge-indev      { background: rgba(74,100,206,0.15);  color: #4a64ce; border: 1px solid rgba(74,100,206,0.3); }
 .badge-fortesting { background: rgba(224,123,32,0.15);  color: var(--warn); border: 1px solid rgba(224,123,32,0.3); }
 .badge-qafailed   { background: rgba(217,79,79,0.15);   color: #d94f4f; border: 1px solid rgba(217,79,79,0.3); }
@@ -317,7 +314,7 @@ select.form-control option { background: #ffffff; color: #333333; }
 .sp-table td { padding: 6px 10px; border: 1px solid #eee; }
 
 /* ===== DETAIL PANEL ===== */
-.detail-panel { display: flex; flex-direction: column; }
+.detail-panel { display: grid; grid-template-columns: 1fr; gap: 20px; }
 .detail-meta  { display: flex; flex-direction: column; gap: 10px; }
 
 /* Bigger badges only inside detail view */
@@ -397,7 +394,7 @@ select.form-control option { background: #ffffff; color: #333333; }
 .empty-state .es-sub   { font-size: 12.5px; }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 900px) { .charts-row, .report-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .charts-row, .detail-panel, .report-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { #sidebar { transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } #main { margin-left: 0; } .form-row, .form-row-3 { grid-template-columns: 1fr; } }
 .rte-wrap { display: flex; flex-direction: column; border: 1.5px solid #ddd; border-radius: 7px; overflow: hidden; background: #fff; }
 .rte-wrap:focus-within { border-color: #cc0000; box-shadow: 0 0 0 3px rgba(204,0,0,0.08); }
@@ -525,12 +522,11 @@ select.form-control option { background: #ffffff; color: #333333; }
           <div class="stat-card c-draft" onclick="filterFromDashboard('stories','Draft')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span><div class="stat-label">Draft</div></div><div class="stat-value" id="ss-draft">–</div></div>
           <div class="stat-card c-forreview" onclick="filterFromDashboard('stories','For Review')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4a9ece" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><div class="stat-label">For Review</div></div><div class="stat-value" id="ss-review">–</div></div>
           <div class="stat-card c-approved" onclick="filterFromDashboard('stories','Approved')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2e9e6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><div class="stat-label">Approved</div></div><div class="stat-value" id="ss-approved">–</div></div>
-          <div class="stat-card c-fordev" onclick="filterFromDashboard('stories','For Development')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#7a50ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><div class="stat-label">For Development</div></div><div class="stat-value" id="ss-fordev">–</div></div>
           <div class="stat-card c-indev" onclick="filterFromDashboard('stories','In Development')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4a64ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span><div class="stat-label">In Development</div></div><div class="stat-value" id="ss-indev">–</div></div>
           <div class="stat-card c-fortesting" onclick="filterFromDashboard('stories','For Testing')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#e07b20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4m-6 0h6"/></svg></span><div class="stat-label">For Testing</div></div><div class="stat-value" id="ss-testing">–</div></div>
           <div class="stat-card c-qafailed" onclick="filterFromDashboard('stories','QA Failed')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#d94f4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span><div class="stat-label">QA Failed</div></div><div class="stat-value" id="ss-qafailed">–</div></div>
           <div class="stat-card c-foruat" onclick="filterFromDashboard('stories','For UAT')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#a050ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div class="stat-label">For UAT</div></div><div class="stat-value" id="ss-foruat">–</div></div>
-          <div class="stat-card c-readydeploy" onclick="filterFromDashboard('stories','Ready for Deployment')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#20b48c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span><div class="stat-label">Ready for Deployment</div></div><div class="stat-value" id="ss-readydeploy">–</div></div>
+          <div class="stat-card c-readydeploy" onclick="filterFromDashboard('stories','Ready for Deployment')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#20b48c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span><div class="stat-label">Ready for Deploy</div></div><div class="stat-value" id="ss-readydeploy">–</div></div>
           <div class="stat-card c-deployed" onclick="filterFromDashboard('stories','Deployed')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2e9e6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><div class="stat-label">Deployed</div></div><div class="stat-value" id="ss-deployed">–</div></div>
           <div class="stat-card c-res" onclick="filterFromDashboard('stories','Closed')"><div class="stat-card-top"><span class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2e9e6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div class="stat-label">Closed</div></div><div class="stat-value" id="ss-closed">–</div></div>
         </div>
@@ -575,15 +571,14 @@ select.form-control option { background: #ffffff; color: #333333; }
                 <option>Enhancement</option>
                 <option>As Designed</option>
                 <option>Needs Clarification</option>
-                <option>Monitoring</option>
               </optgroup>
               <optgroup label="Status — Progress">
                 <option>New</option><option>Open</option>
-                <option>In Progress</option><option>Closed</option>
+                <option>In Progress</option><option>Monitoring</option><option>Closed</option>
               </optgroup>
               <optgroup label="User Story States">
                 <option>Draft</option><option>For Review</option><option>Approved</option>
-                <option>For Development</option><option>In Development</option><option>For Testing</option><option>QA Failed</option>
+                <option>In Development</option><option>For Testing</option><option>QA Failed</option>
                 <option>For UAT</option><option>Ready for Deployment</option><option>Deployed</option>
               </optgroup>
             </select>
@@ -755,7 +750,6 @@ select.form-control option { background: #ffffff; color: #333333; }
                   <option value="Draft" selected>Draft</option>
                   <option value="For Review">For Review</option>
                   <option value="Approved">Approved</option>
-                  <option value="For Development">For Development</option>
                   <option value="In Development">In Development</option>
                   <option value="For Testing">For Testing</option>
                   <option value="QA Failed">QA Failed</option>
@@ -982,7 +976,7 @@ select.form-control option { background: #ffffff; color: #333333; }
               <strong>Item states:</strong> <span style="color:#cc0000">New, Bug, Open, In Progress, As Designed, Enhancement, Needs Clarification, Monitoring, Closed</span>
             </p>
             <p style="font-size:11.5px;color:var(--text-dim);">
-              <strong>User Story states:</strong> <span style="color:#cc0000">Draft, For Review, Approved, For Development, In Development, For Testing, QA Failed, For UAT, Ready for Deployment, Deployed, Closed</span>
+              <strong>User Story states:</strong> <span style="color:#cc0000">Draft, For Review, Approved, In Development, For Testing, QA Failed, For UAT, Ready for Deployment, Deployed, Closed</span>
             </p>
             <p style="font-size:11.5px;color:var(--text-dim);">Valid priorities: <span style="color:#cc0000">1-Urgent, 2-Critical, 3-High, 4-Medium, 5-Low</span></p>
           </div>
@@ -1009,7 +1003,7 @@ select.form-control option { background: #ffffff; color: #333333; }
               <option value="All Statuses">All Statuses</option>
               <optgroup label="User Story States">
                 <option>Draft</option><option>For Review</option><option>Approved</option>
-                <option>For Development</option><option>In Development</option><option>For Testing</option><option>QA Failed</option>
+                <option>In Development</option><option>For Testing</option><option>QA Failed</option>
                 <option>For UAT</option><option>Ready for Deployment</option><option>Deployed</option><option>Closed</option>
               </optgroup>
               <optgroup label="Legacy">
@@ -1297,7 +1291,7 @@ select.form-control option { background: #ffffff; color: #333333; }
             <button class="btn btn-ghost btn-sm" onclick="openActivityHistory()" style="font-size:11px;margin-left:8px;color:#cc0000;">Activity History</button>
       <button class="modal-close" onclick="closeModal('issue-detail-modal')">✕</button>
     </div>
-    <div class="modal-body" id="issue-detail-body" style="padding:0;gap:0;">
+    <div class="modal-body" id="issue-detail-body">
       <div class="empty-state"><div class="loader"></div></div>
     </div>
     <div class="modal-footer">
@@ -1405,7 +1399,6 @@ select.form-control option { background: #ffffff; color: #333333; }
               <option value="Draft">Draft</option>
               <option value="For Review">For Review</option>
               <option value="Approved">Approved</option>
-              <option value="For Development">For Development</option>
               <option value="In Development">In Development</option>
               <option value="For Testing">For Testing</option>
               <option value="QA Failed">QA Failed</option>
@@ -1988,7 +1981,6 @@ async function loadDashboard(type) {
       document.getElementById('ss-draft').textContent      = d.draftCount       || 0;
       document.getElementById('ss-review').textContent     = d.forReviewCount   || 0;
       document.getElementById('ss-approved').textContent   = d.approvedCount    || 0;
-      document.getElementById('ss-fordev').textContent      = d.forDevCount      || 0;
       document.getElementById('ss-indev').textContent      = d.inDevCount       || 0;
       document.getElementById('ss-testing').textContent    = d.testingCount     || 0;
       document.getElementById('ss-qafailed').textContent   = d.qaFailedCount    || 0;
@@ -2085,16 +2077,7 @@ function renderDashboardChart(canvasId, data, title) {
       labels: (data||[]).map(d => d.priority),
       datasets: [{
         data: (data||[]).map(d => d.count),
-        backgroundColor: (data||[]).map(d => {
-          const colorMap = {
-            '1-Urgent':   '#cc0000',
-            '2-Critical': '#d94f4f',
-            '3-High':     '#e07b20',
-            '4-Medium':   '#c88a00',
-            '5-Low':      '#2e9e6b'
-          };
-          return colorMap[d.priority] || '#aaaaaa';
-        }),
+        backgroundColor: ['#cc0000','#d94f4f','#e07b20','#c88a00','#2e9e6b'],
         borderColor: 'rgba(255,255,255,0.8)',
         borderWidth: 2,
         hoverOffset: 6
@@ -2371,150 +2354,110 @@ async function viewIssue(id) {
     if (modalTitle) modalTitle.innerHTML = `${isStory ? 'User Story Detail' : 'Issue Detail'}`;
 
     document.getElementById('issue-detail-body').innerHTML = `
-
-      <!-- ══ STATUS BAR — prominent state/status at a glance ══ -->
-      <div style="display:flex;align-items:center;gap:12px;padding:16px 24px;background:#fafafa;border-bottom:1px solid #eee;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;">State</span>
-          ${stateBadge(issue.state)}
-        </div>
-        ${!isStory ? `
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;">Status</span>
-          ${statusBadge(issue.status)}
-        </div>` : ''}
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;">Priority</span>
-          ${priBadge(issue.priority)}
-        </div>
-        ${isStory && issue.storyPoints ? `
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;">Points</span>
-          <span class="sp-badge">${issue.storyPoints}</span>
-          <span style="font-size:11px;color:#888;">${spHours(issue.storyPoints)}</span>
-        </div>` : ''}
-        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-          <span style="font-size:9px;font-weight:700;padding:3px 10px;border-radius:4px;background:${isStory ? 'rgba(74,100,206,0.12)' : 'rgba(204,0,0,0.10)'};color:${isStory ? '#4a64ce' : '#cc0000'};font-family:'Roboto Mono',monospace;letter-spacing:.06em;">${isStory ? 'STORY' : 'ITEM'}</span>
-          <span style="font-family:'Roboto Mono',monospace;font-size:13px;font-weight:700;color:#aaa;">#${issue.id}</span>
-        </div>
-      </div>
-
-      <!-- ══ MAIN CONTENT ══ -->
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:0;min-height:0;">
-
-        <!-- LEFT: Details -->
-        <div style="padding:24px;border-right:1px solid #f0f0f0;overflow-y:auto;">
-
+      <div class="detail-panel">
+        <div>
           ${isStory ? `
-          <!-- STORY TITLE -->
-          <div style="margin-bottom:20px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Title</div>
-            <h2 style="font-size:20px;font-weight:700;color:#1a1a1a;line-height:1.4;margin:0;">${escHtml(issue.title || '—')}</h2>
-          </div>` : (issue.title ? `
-          <div style="margin-bottom:20px;">
-            <h2 style="font-size:18px;font-weight:700;color:#1a1a1a;line-height:1.4;margin:0;">${escHtml(issue.title)}</h2>
-          </div>` : '')}
-
-          <!-- DESCRIPTION -->
-          <div style="margin-bottom:24px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;margin-bottom:8px;">Description</div>
-            <div style="font-size:13px;color:#333;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:14px 16px;line-height:1.7;word-break:break-word;">${issue.description || '—'}</div>
+          <!-- STORY HEADER -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-family:'Roboto Mono',monospace;font-size:14px;font-weight:700;color:#cc0000;">#${issue.id}</span>
+            <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(74,100,206,0.12);color:#4a64ce;font-family:'Roboto Mono',monospace;letter-spacing:.06em;">STORY</span>
           </div>
-
-          ${isStory && issue.acceptanceCriteria ? `
-          <!-- ACCEPTANCE CRITERIA -->
-          <div style="margin-bottom:24px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;margin-bottom:8px;">✅ Acceptance Criteria</div>
-            <div class="ac-box">${issue.acceptanceCriteria}</div>
-          </div>` : (isStory ? `
-          <div style="margin-bottom:24px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;margin-bottom:8px;">✅ Acceptance Criteria</div>
-            <div class="ac-empty">No acceptance criteria defined.</div>
-          </div>` : '')}
-
-          <!-- META INFO GRID -->
-          <div style="margin-bottom:24px;">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;margin-bottom:12px;">Details</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Particular</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${escHtml(issue.particular_name||issue.particularName||'—')}</div>
-              </div>
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Module</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${escHtml(issue.module||'—')}</div>
-              </div>
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Assigned To</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${escHtml(issue.assignedToName||'Unassigned')}</div>
-              </div>
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Created By</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${escHtml(issue.issuedByName||'—')}</div>
-              </div>
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Date Identified</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${fmtDate(issue.dateIdentified||issue.date_identified)}</div>
-              </div>
-              ${isStory ? `
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Sprint</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${escHtml(issue.iterationPath||'—')}</div>
-              </div>` : `
-              <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 14px;">
-                <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Source</div>
-                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">${escHtml(issue.source||'Manual')}</div>
-              </div>`}
-            </div>
+          <div style="font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;color:#aaa;font-family:'Roboto Mono',monospace;margin-bottom:4px;">Title</div>
+          <h2 style="font-size:21px;font-weight:700;color:#1a1a1a;margin-bottom:4px;line-height:1.4;">${escHtml(issue.title || '—')}</h2>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
+            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;">${issue.description || '—'}</div>
           </div>
-
-          <!-- ATTACHMENTS -->
-          <div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;margin-bottom:12px;">📎 Attachments (${attachments.length})</div>
-            <div id="attachment-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
-              ${attachments.length
-                ? attachments.map(a => attachmentHTML(a, id)).join('')
-                : `<div style="color:#aaa;font-size:12px;padding:8px 0;">No attachments yet.</div>`}
-            </div>
-            <div class="attachment-upload-area">
-              <input type="file" id="attachment-file-input" style="display:none;" onchange="uploadAttachment(${id})" />
-              <button class="btn-upload" onclick="document.getElementById('attachment-file-input').click()">+ Attach File</button>
-              <span class="attachment-count"></span>
-            </div>
+          <div class="detail-meta">
+            <div class="meta-row"><span class="meta-key">State</span><span class="meta-val">${stateBadge(issue.state)}</span></div>
+            <div class="meta-row"><span class="meta-key">Status</span><span class="meta-val">${statusBadge(issue.status)}</span></div>
+            <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
+            <div class="meta-row"><span class="meta-key">Story Points</span><span class="meta-val">${issue.storyPoints ? `<span class="sp-badge">${issue.storyPoints}</span> <span style="font-size:11px;color:#888;">${spHours(issue.storyPoints)}</span>` : '—'}</span></div>
+            <div class="meta-row"><span class="meta-key">Sprint</span><span class="meta-val">${escHtml(issue.iterationPath||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Particular</span><span class="meta-val">${escHtml(issue.particular_name||issue.particularName||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Module</span><span class="meta-val">${escHtml(issue.module||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Assigned To</span><span class="meta-val">${escHtml(issue.assignedToName||'Unassigned')}</span></div>
+            <div class="meta-row"><span class="meta-key">Created By</span><span class="meta-val">${escHtml(issue.issuedByName||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Date</span><span class="meta-val">${fmtDate(issue.dateIdentified||issue.date_identified)}</span></div>
           </div>
+          <div style="margin-top:14px;">
+            <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">✅ Acceptance Criteria</div>
+            ${issue.acceptanceCriteria
+              ? `<div class="ac-box">${issue.acceptanceCriteria}</div>`
+              : `<div class="ac-empty">No acceptance criteria defined.</div>`}
+          </div>
+          ` : `
+          <!-- ITEM HEADER -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-family:'Roboto Mono',monospace;font-size:14px;font-weight:700;color:#cc0000;">#${issue.id}</span>
+            <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(204,0,0,0.10);color:#cc0000;font-family:'Roboto Mono',monospace;letter-spacing:.06em;">ITEM</span>
+            ${issue.title ? `<span style="font-size:14px;font-weight:700;color:#1a1a1a;">${escHtml(issue.title)}</span>` : ''}
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:6px;">Description</div>
+            <div style="font-size:12px;color:#1a1a1a;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 16px;line-height:1.6;word-break:break-word;">${issue.description || '—'}</div>
+          </div>
+          <div class="detail-meta">
+            <div class="meta-row"><span class="meta-key">State</span><span class="meta-val">${stateBadge(issue.state)}</span></div>
+            <div class="meta-row"><span class="meta-key">Status</span><span class="meta-val">${statusBadge(issue.status)}</span></div>
+            <div class="meta-row"><span class="meta-key">Priority</span><span class="meta-val">${priBadge(issue.priority)}</span></div>
+            <div class="meta-row"><span class="meta-key">Particular</span><span class="meta-val">${escHtml(issue.particular_name||issue.particularName||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Module</span><span class="meta-val">${escHtml(issue.module||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Assigned To</span><span class="meta-val">${escHtml(issue.assignedToName||'Unassigned')}</span></div>
+            <div class="meta-row"><span class="meta-key">Created By</span><span class="meta-val">${escHtml(issue.issuedByName||'—')}</span></div>
+            <div class="meta-row"><span class="meta-key">Date</span><span class="meta-val">${fmtDate(issue.dateIdentified||issue.date_identified)}</span></div>
+            <div class="meta-row"><span class="meta-key">Source</span><span class="meta-val">${escHtml(issue.source||'Manual')}</span></div>
+          </div>
+          `}
         </div>
-
-        <!-- RIGHT: Discussion -->
-        <div style="padding:24px;display:flex;flex-direction:column;gap:0;background:#fdfdfd;overflow-y:auto;max-height:calc(100vh - 120px);">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-family:'Roboto Mono',monospace;margin-bottom:14px;">💬 Discussion (${comments.length})</div>
-
-          <div class="comments-section" id="comments-list" style="flex:1;margin-bottom:16px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1a1a;font-family:'Roboto Mono',monospace;margin-bottom:10px;">
+            💬 Discussion (${comments.length})
+          </div>
+          <div class="comments-section" id="comments-list">
             ${comments.length
               ? comments.map(c => { const cid = c.id || c.comment_id || 0; return `
-                <div class="comment-item" id="comment-${cid}" style="position:relative;margin-bottom:10px;">
-                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
-                    <span class="comment-author" style="font-size:12px;">${escHtml(c.author || c.user_name || 'User')}</span>
-                    <span class="comment-time" style="font-size:10px;margin-left:auto;">${fmtDate(c.created_at)}</span>
-                    <button onclick="deleteComment(${cid})"
-                      style="background:none;border:none;cursor:pointer;color:#ddd;font-size:13px;line-height:1;padding:2px 4px;flex-shrink:0;"
-                      onmouseover="this.style.color='#cc0000'" onmouseout="this.style.color='#ddd'">✕</button>
+                <div class="comment-item" id="comment-${cid}" style="position:relative;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span class="comment-author">${escHtml(c.author || c.user_name || 'User')}</span>
+                    <span class="comment-time">${fmtDate(c.created_at)}</span>
+                    <button onclick="deleteComment(${cid})" title="Delete comment"
+                      style="background:none;border:none;cursor:pointer;color:#ccc;font-size:14px;line-height:1;padding:2px 4px;border-radius:4px;flex-shrink:0;margin-left:4px;"
+                      onmouseover="this.style.color='#cc0000'" onmouseout="this.style.color='#ccc'">✕</button>
                   </div>
-                  <div class="comment-text" style="font-size:12px;line-height:1.5;">${escHtml(c.comment || c.commentText || "")}</div>
+                  <div class="comment-text">${escHtml(c.comment || c.commentText || "")}</div>
                 </div>`}).join('')
-              : `<div style="color:#bbb;font-size:12px;padding:16px 0;text-align:center;">No comments yet.</div>`
+              : `<div style="color:#1a1a1a;font-size:12px;padding:8px 0;">No comments yet.</div>`
             }
           </div>
-
-          <!-- Comment input -->
-          <div style="border-top:1px solid #eee;padding-top:14px;">
-            <div id="comment-user-wrapper" style="margin-bottom:8px;">${buildCommentUserWidget()}</div>
-            <textarea id="comment-text" placeholder="Write a comment…" rows="3" style="width:100%;resize:none;border:1px solid #e0e0e0;border-radius:7px;padding:9px 12px;font-family:'Raleway',sans-serif;font-size:12px;outline:none;margin-bottom:8px;"></textarea>
+          <div class="comment-input-row" style="margin-top:12px;flex-direction:column;gap:8px;">
+            <div id="comment-user-wrapper" style="display:flex;gap:8px;align-items:center;">
+              ${buildCommentUserWidget()}
+            </div>
+            <textarea id="comment-text" placeholder="Add a comment…" rows="4" style="width:100%;resize:vertical;"></textarea>
             <div style="display:flex;justify-content:flex-end;">
               <button class="btn btn-primary btn-sm" onclick="addComment()">Post Comment</button>
             </div>
           </div>
         </div>
-
+      </div>
+      </div>
+      <div class="attachments-section">
+        <div class="attachments-header">📎 Attachments (${attachments.length})</div>
+        <div class="attachment-list" id="attachment-list">
+          ${attachments.length
+            ? attachments.map(a => attachmentHTML(a, id)).join('')
+            : `<div style="color:#1a1a1a;font-size:12px;">No attachments yet.</div>`}
+        </div>
+        <div class="attachment-upload-area">
+          <input type="file" id="attachment-file-input" style="display:none;" onchange="uploadAttachment(${id})" />
+          <button class="btn-upload" id="attach-upload-btn"
+            onclick="document.getElementById('attachment-file-input').click()">
+            + Attach File
+            </button>
+           <span class="attachment-count"></span>
+          </span>
+        </div>
       </div>`;
 
     document.getElementById('edit-issue-btn').onclick   = () => openEditModal(issue);
@@ -3019,12 +2962,23 @@ function buildCommentUserWidget() {
   const userId   = localStorage.getItem('userId');
   const userName = localStorage.getItem('userName');
 
-  // All roles get a dropdown — always defaulting to the currently logged-in user
-  const activeUsers = allUsers.filter(u => u.isActive !== 0 && u.isActive !== '0');
-  const opts = activeUsers.map(u =>
-    `<option value="${u.id}" ${String(u.id) === String(userId) ? 'selected' : ''}>${escHtml(u.name)}</option>`
-  ).join('');
-  return `<select class="form-control" id="comment-user-select" style="max-width:160px;">${opts}</select>`;
+  // Admin gets a dropdown of ALL active users so they can post as anyone
+  if (role === 'admin') {
+    const activeUsers = allUsers.filter(u => u.isActive !== 0 && u.isActive !== '0');
+    const opts = activeUsers.map(u => `<option value="${u.id}">${escHtml(u.name)}</option>`).join('');
+    return `<select class="form-control" id="comment-user-select" style="max-width:160px;">
+              ${opts}
+            </select>`;
+  } else {
+    // All other roles (reporter, developer, staff, viewer) — locked to their own identity
+    const loggedUser  = allUsers.find(u => String(u.id) === String(userId));
+    const displayName = loggedUser ? loggedUser.name : (userName || 'Unknown');
+    const uid         = loggedUser ? loggedUser.id   : (userId || '');
+    return `<input type="hidden" id="comment-user-select" value="${uid}" data-name="${escHtml(displayName)}" />
+            <div style="padding:6px 12px;background:#f8f8f8;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text-bright);font-weight:600;">
+              ${escHtml(displayName)}
+            </div>`;
+  }
 }
 
 async function addComment() {
@@ -3034,8 +2988,8 @@ async function addComment() {
 
   const role    = localStorage.getItem('role');
   const userId  = userEl.value;
-  // Always read from the select's selected option text
-  const author  = userEl.tagName === 'SELECT'
+  // Get author name — from dropdown text or data-name attribute
+  const author  = (role === 'admin' && userEl.tagName === 'SELECT')
     ? userEl.options[userEl.selectedIndex]?.text
     : (userEl.dataset.name || localStorage.getItem('userName') || 'User');
 
@@ -4165,7 +4119,7 @@ function stateBadge(state) {
   const map = {
     // PDF states
     'Draft':'badge-draft','For Review':'badge-forreview','Approved':'badge-approved',
-    'For Development':'badge-fordev','In Development':'badge-indev','For Testing':'badge-fortesting','QA Failed':'badge-qafailed',
+    'In Development':'badge-indev','For Testing':'badge-fortesting','QA Failed':'badge-qafailed',
     'For UAT':'badge-foruat','Ready for Deployment':'badge-readydeploy','Deployed':'badge-deployed','Closed':'badge-closed',
     // Legacy
     'New':'badge-new','Bug':'badge-bug','Open':'badge-open','In Progress':'badge-inprogress','Resolved':'badge-resolved'
