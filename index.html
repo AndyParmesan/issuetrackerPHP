@@ -319,7 +319,7 @@ tbody td { padding: 11px 14px; color: var(--text-main); vertical-align: middle; 
 .modal-footer { padding: 16px 24px; border-top: 1px solid #eee; display: flex; gap: 10px; justify-content: flex-end; }
 
 /* ===== FORM ===== */
-.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group { display: flex; flex-direction: column; gap: 10px; }
 .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-family: 'Roboto Mono', monospace; }
@@ -780,8 +780,7 @@ select.form-control option { background: #ffffff; color: #333333; }
             <!-- HEADER SECTION -->
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#cc0000;font-family:'Roboto Mono',monospace;padding:0 0 8px 0;border-bottom:2px solid rgba(204,0,0,0.15);margin-bottom:18px;">Header Section</div>
 
-            <div class="form-group" style="margin-bottom:14px;">
-              <label>Title <span style="color:#000">*</span> <span style="color:#aaa;font-size:9px;font-weight:400;text-transform:none;"></span></label>
+            <div class="form-group" style="margin-bottom:14px; margin-top:10px;">              <label>Title <span style="color:#000">*</span> <span style="color:#aaa;font-size:9px;font-weight:400;text-transform:none;"></span></label>
               <input type="text" id="us-title" required />
             </div>
 
@@ -1384,7 +1383,7 @@ select.form-control option { background: #ffffff; color: #333333; }
       <!-- ITEM-ONLY FIELDS -->
       <div id="edit-item-fields">
         <div class="form-row">
-          <div class="form-group">
+          <div style="margin-top: 6px"  class="form-group">
             <label>State <span style="color:#000">*</span></label>
             <select class="form-control" id="edit-state">
               <option value="New">New</option>
@@ -1395,7 +1394,7 @@ select.form-control option { background: #ffffff; color: #333333; }
               <option value="Monitoring">Monitoring</option>
             </select>
           </div>
-          <div class="form-group">
+          <div  style="margin-top: 6px" class="form-group">
             <label>Status</label>
             <select class="form-control" id="edit-status">
               <option value="New">New</option>
@@ -1454,9 +1453,9 @@ select.form-control option { background: #ffffff; color: #333333; }
           </div>
         </div>
         <div class="form-group" style="margin-bottom:6px;">
-          <label style="font-size:11px;">Acceptance Criteria</label>
+          <label style="font-size:11px;">Acceptance Criteria</label> 
           <div class="rte-wrap">
-            <div class="rte-toolbar" data-target="edit-acceptance-criteria">
+            <div  class="rte-toolbar" data-target="edit-acceptance-criteria">
               <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
               <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
               <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
@@ -1985,16 +1984,25 @@ function navigateDashboard(type) {
 }
 
 async function updateCombinedBadge() {
+async function refreshDashboardStats(type) {
   try {
-    const [rItems, rStories] = await Promise.all([
-      apiFetch('/get_stats.php?type=items'),
-      apiFetch('/get_stats.php?type=stories')
-    ]);
-    const totalItems   = rItems?.data?.total   || 0;
-    const totalStories = rStories?.data?.total || 0;
-    const el = document.getElementById('badge-open');
-    if (el) el.textContent = totalItems + totalStories;
-  } catch { }
+    // 'type' will be 'items' or 'stories'
+    const res = await fetch(`api/get_stats.php?type=${type}`);
+    const result = await res.json();
+
+    if (result.success) {
+      const d = result.data;
+      // Update the Total card with the database count
+      const totalElem = document.getElementById('si-total');
+      if (totalElem) totalElem.textContent = d.total || 0;
+      
+      // Update other status-specific cards if necessary
+      if (document.getElementById('si-open')) 
+          document.getElementById('si-open').textContent = d.open || 0;
+    }
+  } catch (err) {
+    console.error("Failed to fetch accurate database count:", err);
+  }
 }
 
 async function loadDashboard(type) {
@@ -3337,7 +3345,8 @@ async function saveEdit() {
         { key: 'priority',  label: 'Priority',     oldVal: normalise(old.priority),                                            newVal: normalise(dto.priority) },
         { key: 'assignedTo',label: 'Assigned To',  oldVal: normalise(old.assignedToName || old.assigned_to_name || resolveUserName(old.assigned_to)), newVal: normalise(resolveUserName(dto.assignedTo)) },
         { key: 'issuedBy',  label: 'Created By',   oldVal: normalise(old.issuedByName   || old.issued_by_name   || resolveUserName(old.issued_by)),   newVal: normalise(resolveUserName(dto.issuedBy)) },
-      ];
+        { key: 'description', label: 'Description', oldVal: normalise(old.description).replace(/<[^>]*>/g, ''),                 newVal: normalise(dto.description).replace(/<[^>]*>/g, '') },
+        ];
       for (const f of fields) {
         // Only log if the value actually changed (same-to-same is skipped)
         if (f.oldVal !== f.newVal) {

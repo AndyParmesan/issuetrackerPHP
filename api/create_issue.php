@@ -33,7 +33,7 @@ try {
         ':module'              => $data['module']             ?? null,
         ':description'         => $data['description'],
         ':state'               => $data['state']              ?? 'New',
-        ':status'              => $data['status'] ?? 'New',
+        ':status'              => $data['status']             ?? 'New',
         ':priority'            => $data['priority']           ?? '4-Medium',
         ':storyPoints'         => $data['storyPoints']        ?? null,
         ':areaPath'            => $data['areaPath']           ?? null,
@@ -46,6 +46,25 @@ try {
     ]);
 
     $newId = $pdo->lastInsertId();
+
+    // Notify assigned user
+    $assignedTo = $data['assignedTo'] ?? null;
+    if ($assignedTo) {
+        $actorName = $data['actorName'] ?? null;
+        if (!$actorName && !empty($data['issuedBy'])) {
+            $uStmt = $pdo->prepare("SELECT name FROM users WHERE id = :id");
+            $uStmt->execute([':id' => $data['issuedBy']]);
+            $u = $uStmt->fetch(PDO::FETCH_ASSOC);
+            $actorName = $u['name'] ?? 'Someone';
+        }
+        $actorName = $actorName ?: 'Someone';
+        $desc = isset($data['title']) && $data['title']
+                ? $data['title']
+                : substr(strip_tags($data['description']), 0, 60);
+        $message = "You were assigned by {$actorName} to Issue #{$newId}: {$desc}";
+        $pdo->prepare("INSERT INTO notifications (user_id, issue_id, type, message) VALUES (:u, :i, 'assigned', :m)")
+            ->execute([':u' => $assignedTo, ':i' => $newId, ':m' => $message]);
+    }
 
     echo json_encode([
         "success" => true,

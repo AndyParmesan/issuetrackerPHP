@@ -13,7 +13,8 @@ try {
     if ($type === 'stories' || $type === 'user_story') {
         $where = "WHERE source = 'user_story'";
     } else {
-        $where = "WHERE (source != 'user_story' OR source IS NULL OR source = 'Manual' OR source = 'XLSX Import')";
+        // Exclude user_story and particular_id 19 (Others - contains user stories only, not regular items)
+        $where = "WHERE (source IS NULL OR source != 'user_story') AND particular_id IS NOT NULL AND particular_id != 19";
     }
 
     // Total
@@ -55,16 +56,16 @@ try {
         ];
     } else {
         $data = [
-            'total'              => $total,
-            'newCount'           => $getState('New'),
-            'bugCount'           => $getState('Bug'),
-            'openCount'          => $getState('Open'),
-            'inProgressCount'    => $getState('In Progress') + $getStatus('In Progress'),
-            'asDesignedCount'    => $getState('As Designed'),
-            'enhancementCount'   => $getState('Enhancement'),
-            'needsClarifCount'   => $getState('Needs Clarification'),
-            'monitoringCount'    => $getState('Monitoring'),
-            'closedCount'        => $getState('Closed') + $getStatus('Closed') + $getStatus('Resolved'),
+            'total'            => $total,
+            'newCount'         => $getState('New'),
+            'bugCount'         => $getState('Bug'),
+            'openCount'        => $getStatus('Open'),
+            'inProgressCount'  => $getStatus('In Progress'),
+            'asDesignedCount'  => $getState('As Designed'),
+            'enhancementCount' => $getState('Enhancement'),
+            'needsClarifCount' => $getState('Needs Clarification'),
+            'monitoringCount'  => $getState('Monitoring'),   // Fixed: was getStatus(), should be getState()
+            'closedCount'      => $getStatus('Closed') + $getStatus('Resolved'),
         ];
     }
 
