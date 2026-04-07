@@ -105,6 +105,28 @@ body.modal-open { overflow: hidden; }
 .topbar-btn { display: flex; align-items: center; gap: 7px; background: var(--accent); color: #fff; font-weight: 700; font-size: 12.5px; border: none; border-radius: 8px; padding: 7px 16px; cursor: pointer; transition: background 0.2s; font-family: 'Raleway', sans-serif; }
 .topbar-btn:hover { background: var(--accent-dim); }
 
+/* ===== NOTIFICATIONS ===== */
+.notif-bell-wrap { position: relative; }
+.notif-bell-btn { background: none; border: none; cursor: pointer; font-size: 20px; padding: 6px 8px; border-radius: 8px; transition: background 0.2s; position: relative; display: flex; align-items: center; }
+.notif-bell-btn:hover { background: rgba(204,0,0,0.08); }
+.notif-badge { position: absolute; top: 2px; right: 2px; background: #cc0000; color: #fff; font-size: 9px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 99px; display: flex; align-items: center; justify-content: center; padding: 0 4px; font-family: 'Roboto Mono', monospace; pointer-events: none; }
+.notif-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 360px; background: #fff; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 999; display: none; flex-direction: column; overflow: hidden; }
+.notif-dropdown.open { display: flex; }
+.notif-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.notif-header-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #cc0000; font-family: 'Roboto Mono', monospace; }
+.notif-mark-all { font-size: 11px; color: #888; background: none; border: none; cursor: pointer; font-family: 'Raleway', sans-serif; }
+.notif-mark-all:hover { color: #cc0000; }
+.notif-list { max-height: 380px; overflow-y: auto; }
+.notif-item { padding: 12px 16px; border-bottom: 1px solid #f8f8f8; cursor: pointer; transition: background 0.15s; display: flex; gap: 10px; align-items: flex-start; }
+.notif-item:hover { background: rgba(204,0,0,0.04); }
+.notif-item.unread { background: rgba(204,0,0,0.03); border-left: 3px solid #cc0000; }
+.notif-item.unread:hover { background: rgba(204,0,0,0.07); }
+.notif-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.notif-content { flex: 1; min-width: 0; }
+.notif-msg { font-size: 12px; color: #333; line-height: 1.4; }
+.notif-time { font-size: 10px; color: #aaa; margin-top: 3px; font-family: 'Roboto Mono', monospace; }
+.notif-empty { padding: 32px 16px; text-align: center; color: #aaa; font-size: 13px; }
+
 /* ===== CONTENT ===== */
 #content { flex: 1; padding: 28px; display: flex; flex-direction: column; gap: 24px; }
 .view { display: none; flex-direction: column; gap: 24px; }
@@ -469,6 +491,21 @@ select.form-control option { background: #ffffff; color: #333333; }
       <input type="text" id="global-search" placeholder="Search ID or description…" />
     </div>
     <button class="topbar-btn" id="topbar-new-btn" onclick="navigate('new-issue')" style="display:none;">➕ New Item</button>
+    <div class="notif-bell-wrap" id="notif-bell-wrap">
+      <button class="notif-bell-btn" onclick="toggleNotifDropdown()" title="Notifications">
+        🔔
+        <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+      </button>
+      <div class="notif-dropdown" id="notif-dropdown">
+        <div class="notif-header">
+          <span class="notif-header-title">🔔 Notifications</span>
+          <button class="notif-mark-all" onclick="markAllNotificationsRead()">Mark all as read</button>
+        </div>
+        <div class="notif-list" id="notif-list">
+          <div class="notif-empty">No notifications yet.</div>
+        </div>
+      </div>
+    </div>
     <div id="topbar-user" style="display:flex;align-items:center;gap:7px;background:rgba(204,0,0,0.07);border:1px solid rgba(204,0,0,0.15);border-radius:20px;padding:5px 13px 5px 9px;font-size:12.5px;font-weight:600;color:#cc0000;font-family:'Raleway',sans-serif;white-space:nowrap;">
       <span style="font-size:16px;">👤</span>
       <span id="topbar-username">—</span>
@@ -1495,9 +1532,9 @@ select.form-control option { background: #ffffff; color: #333333; }
 <div id="toast-container"></div>
 
 <script>
-// ============================================================
+
 // SESSION CHECK & LOGOUT
-// ============================================================
+
 if (!localStorage.getItem('loggedIn')) {
     window.location.href = 'login.html';
 }
@@ -1518,9 +1555,9 @@ function logout() {
     window.location.href = 'login.html';
 }
 
-// ============================================================
+
 // SESSION TIMEOUT — auto logout after 60 min of inactivity
-// ============================================================
+
 (function() {
   const TIMEOUT_MS = 60 * 60 * 1000;
   const WARN_MS    = 55 * 60 * 1000;
@@ -1544,14 +1581,14 @@ function logout() {
   resetTimers();
 })()
 
-// ============================================================
+
 // CONFIG
-// ============================================================
+
 const API = window.location.protocol + '//' + window.location.hostname + '/issuetracker/api';
 
-// ============================================================
+
 // STATE
-// ============================================================
+
 let currentIssueId  = null;
 let currentReportId = null;
 let allUsers        = [];
@@ -1559,9 +1596,9 @@ let allParticulars  = [];  // master cache for particulars
 let charts          = {};
 let searchTimeout   = null;
 
-// ============================================================
+
 // MD5 (for password hashing in user management)
-// ============================================================
+
 function md5(string) {
   function safeAdd(x, y) { var lsw=(x&0xffff)+(y&0xffff); var msw=(x>>16)+(y>>16)+(lsw>>16); return (msw<<16)|(lsw&0xffff); }
   function bitRotateLeft(num, cnt) { return (num<<cnt)|(num>>>(32-cnt)); }
@@ -1604,9 +1641,9 @@ function md5(string) {
   return hex(binl_md5(str2binl(string),string.length*8));
 }
 
-// ============================================================
+
 // INIT
-// ============================================================
+
 document.addEventListener('DOMContentLoaded', () => {
   // ── Role-based nav visibility ──────────────────────────────
   const role = localStorage.getItem('role');
@@ -1638,6 +1675,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   loadUsers();
+  startNotifPolling();
   navigateDashboard('items');
   setTodayDate();
   updateCombinedBadge();
@@ -1664,9 +1702,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ============================================================
+
 // NAVIGATION
-// ============================================================
+
 function navigate(view) {
   if (view === 'dashboard') { navigateDashboard(currentDashboardType || 'items'); return; }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1715,9 +1753,9 @@ function openMaintenanceModal() {
   switchMaintTab('users');
 }
 
-// ============================================================
+
 // API HELPER
-// ============================================================
+
 async function apiFetch(url, opts = {}) {
   try {
     const res = await fetch(`${API}${url}`, {
@@ -1740,9 +1778,9 @@ async function apiFetch(url, opts = {}) {
   }
 }
 
-// ============================================================
+
 // USERS
-// ============================================================
+
 async function loadUsers() {
   try {
     const [usersRes, partsRes] = await Promise.all([
@@ -1911,12 +1949,9 @@ function setupImportedBy() {
   }
 }
 
-// ============================================================
+
 // DASHBOARD
-// ============================================================
-// ============================================================
-// DASHBOARD DROPDOWN
-// ============================================================
+
 let currentDashboardType = 'items';
 
 function toggleDashboardDropdown() {
@@ -2170,14 +2205,11 @@ async function loadRecentStories() {
 
 
 
-// ============================================================
+
 // RECENT ISSUES
-// ============================================================
 
-
-// ============================================================
 // ALL ISSUES
-// ============================================================
+
 let _issuesCache = [];
 let _issuesPage  = 1;
 let _filterMine  = 'all';
@@ -2207,7 +2239,8 @@ async function loadIssues() {
   const assignedTo = document.getElementById('filter-assigned-to')?.value  || '';
 
   // Status values live in the status column, not state
-  const statusValues = ['New','Open','In Progress','Monitoring','Closed'];
+  // Only true status column values — 'New' and 'Monitoring' are states, not statuses
+  const statusValues = ['Open','In Progress','Closed'];
   const isStatusFilter = statusValues.includes(stateVal);
   const state  = isStatusFilter ? '' : stateVal;
   const status = isStatusFilter ? stateVal : '';
@@ -2329,7 +2362,7 @@ function allIssueRow(i) {
     <td><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;font-family:'Roboto Mono',monospace;background:${typeBg};color:${typeColor};letter-spacing:0.05em;">${issueType}</span></td>
     <td style="font-size:12px;white-space:nowrap;">${escHtml(i.particular_name||i.dashboard||'—')}</td>
     <td style="font-size:12px;">${escHtml(i.module||'—')}</td>
-    <td class="td-desc">${escHtml((i.title || i.description||'').replace(/<[^>]*>/g,''))}</td>
+    <td class="td-desc">${escHtml(stripHtml(i.title || i.description || ''))}</td>
     <td>${stateBadge(i.state)}</td>
     <td>${statusBadge(i.status)}</td>
     <td>${priBadge(i.priority)}</td>
@@ -2341,9 +2374,9 @@ function allIssueRow(i) {
   </tr>`;
 }
 
-// ============================================================
+
 // ISSUE DETAIL
-// ============================================================
+
 async function viewIssue(id) {
   currentIssueId = id; currentActivityIssueId = id;
   openModal('issue-detail-modal');
@@ -3272,6 +3305,7 @@ async function saveEdit() {
     assignedTo:     parseInt(document.getElementById('edit-assigned-to').value) || null,
     issuedBy:       parseInt(document.getElementById('edit-issued-by').value) || null,
     dateIdentified: document.getElementById('edit-date-identified').value        || null,
+    actorName:      localStorage.getItem('userName') || 'Someone',
   };
   if (isStory) {
     dto.title              = document.getElementById('edit-title').value.trim()               || null;
@@ -3975,7 +4009,7 @@ async function exportIssues() {
 
     // ── Header row ─────────────────────────────────────────────
     const headers = [
-      'ID','Dashboard','Module','Description','State','Status',
+      'ID','Particular','Module','Description','State','Status',
       'Priority','Story Points','Sprint',
       'Created By','Assigned To','Date Identified','Source'
     ];
@@ -4022,9 +4056,9 @@ async function exportIssues() {
     issues.forEach(i => {
       wsData.push([
         i.id,
-        i.dashboard         || '',
+        i.particular_name || i.dashboard || '',
         i.module            || '',
-        i.title || i.description || '',
+        stripHtml(i.title || i.description || ''),
         i.state             || '',
         i.status            || '',
         i.priority          || '',
@@ -4216,6 +4250,12 @@ function escHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function stripHtml(html) {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
 function emptyRow(cols, msg) {
   return `<tr><td colspan="${cols}"><div class="empty-state"><div class="es-icon">🔍</div><div class="es-title">${escHtml(msg)}</div></div></td></tr>`;
 }
@@ -4235,8 +4275,75 @@ function formatSize(bytes) {
 }
 
 // ============================================================
-// RICH TEXT TOOLBAR
+// NOTIFICATIONS
 // ============================================================
+let _notifPollInterval = null;
+
+async function loadNotifications() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+  try {
+    const res = await apiFetch(`/get_notifications.php?userId=${userId}`);
+    const notifications = res.data || [];
+    const unread = res.unread_count || 0;
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+      badge.textContent = unread > 99 ? '99+' : unread;
+      badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    const list = document.getElementById('notif-list');
+    if (!list) return;
+    if (!notifications.length) {
+      list.innerHTML = '<div class="notif-empty">No notifications yet.</div>';
+      return;
+    }
+    list.innerHTML = notifications.map(n => `
+      <div class="notif-item ${n.is_read == 0 ? 'unread' : ''}" onclick="clickNotification(${n.id}, ${n.issue_id})">
+        <span class="notif-icon">👤</span>
+        <div class="notif-content">
+          <div class="notif-msg">${escHtml(n.message)}</div>
+          <div class="notif-time">${fmtDateTime(n.created_at)}</div>
+        </div>
+      </div>`).join('');
+  } catch { }
+}
+
+function toggleNotifDropdown() {
+  const dd = document.getElementById('notif-dropdown');
+  if (!dd) return;
+  dd.classList.toggle('open');
+  if (dd.classList.contains('open')) loadNotifications();
+}
+
+async function clickNotification(notifId, issueId) {
+  try { await apiFetch(`/mark_one_notification_read.php?id=${notifId}`); } catch { }
+  document.getElementById('notif-dropdown')?.classList.remove('open');
+  loadNotifications();
+  viewIssue(issueId);
+}
+
+async function markAllNotificationsRead() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+  try { await apiFetch(`/mark_notifications_read.php?userId=${userId}`); } catch { }
+  loadNotifications();
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('notif-bell-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('notif-dropdown')?.classList.remove('open');
+  }
+});
+
+function startNotifPolling() {
+  loadNotifications();
+  _notifPollInterval = setInterval(loadNotifications, 30000);
+}
+
+
+// RICH TEXT TOOLBAR
+
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('.rte-btn');
   if (!btn) return;
