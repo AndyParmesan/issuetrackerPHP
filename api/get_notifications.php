@@ -15,7 +15,7 @@ if (!$userId) {
 
 try {
     $stmt = $pdo->prepare("
-        SELECT n.id, n.issue_id, n.type, n.message, n.is_read, n.created_at,
+        SELECT n.id, n.issue_id, n.message, n.is_read, n.created_at,
                i.title, i.description
         FROM notifications n
         LEFT JOIN issues i ON n.issue_id = i.id

@@ -459,6 +459,7 @@ select.form-control option { background: #ffffff; color: #333333; }
     <a class="nav-item" id="nav-user-story" data-view="user-story"><span class="icon"></span> User Story</a>
     <a class="nav-item" id="nav-import" data-view="import"><span class="icon"></span> Import XLSX</a>
     <div class="nav-section-label" id="nav-analytics-label">Analytics</div>
+    <a class="nav-item" id="nav-deleted" onclick="navigate('deleted')" style="cursor:pointer;"><span class="icon">🗑️</span> Recently Deleted <span class="nav-badge" id="badge-deleted" style="display:none;background:#888;">0</span></a>
     <a class="nav-item" id="nav-reports" data-view="reports"><span class="icon"></span> Reports</a>
     <a class="nav-item" id="nav-maintenance" onclick="openMaintenanceModal()" style="cursor:pointer;display:none;"><span class="icon"></span> Maintenance</a>
 
@@ -608,6 +609,7 @@ select.form-control option { background: #ffffff; color: #333333; }
             <select class="filter-select" id="filter-state" onchange="loadIssues()">
               <option value="">All</option>
               <optgroup label="State — Issue Type">
+                <option>New</option>
                 <option>Bug</option>
                 <option>Enhancement</option>
                 <option>As Designed</option>
@@ -615,7 +617,7 @@ select.form-control option { background: #ffffff; color: #333333; }
                 <option>Monitoring</option>
               </optgroup>
               <optgroup label="Status — Progress">
-                <option>New</option><option>Open</option>
+                <option>Open</option>
                 <option>In Progress</option><option>Closed</option>
               </optgroup>
               <optgroup label="User Story States">
@@ -1083,6 +1085,50 @@ select.form-control option { background: #ffffff; color: #333333; }
       </div>
     </div>
 
+    <!-- ===== RECENTLY DELETED ===== -->
+    <div class="view" id="view-deleted">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🗑️ Recently Deleted</div>
+          <div class="sep"></div>
+          <span style="font-size:11px;color:#888;font-family:'Roboto Mono',monospace;">
+            Items are permanently deleted after <strong>30 days</strong>
+          </span>
+          <button class="btn btn-danger btn-sm" style="margin-left:12px;" onclick="emptyDeletedBin()">
+            🗑 Empty Bin
+          </button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Type</th>
+                  <th>Particular</th>
+                  <th>Module</th>
+                  <th>Description / Title</th>
+                  <th>State</th>
+                  <th>Priority</th>
+                  <th>Deleted By</th>
+                  <th>Deleted On</th>
+                  <th>Expires In</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="deleted-issues-body">
+                <tr>
+                  <td colspan="11">
+                    <div class="empty-state"><div class="loader"></div></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== MAINTENANCE ===== -->
 
 
@@ -1453,9 +1499,9 @@ select.form-control option { background: #ffffff; color: #333333; }
           </div>
         </div>
         <div class="form-group" style="margin-bottom:6px;">
-          <label style="font-size:11px;">Acceptance Criteria</label> 
+          <label style="font-size:11px;">Acceptance Criteria</label>
           <div class="rte-wrap">
-            <div  class="rte-toolbar" data-target="edit-acceptance-criteria">
+            <div class="rte-toolbar" data-target="edit-acceptance-criteria">
               <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><b>B</b></button>
               <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i>I</i></button>
               <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><u>U</u></button>
@@ -1678,6 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
   navigateDashboard('items');
   setTodayDate();
   updateCombinedBadge();
+  updateDeletedBadge();
 
   document.querySelectorAll('.nav-item[data-view]').forEach(item => {
     item.addEventListener('click', () => navigate(item.dataset.view));
@@ -1704,7 +1751,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // NAVIGATION
 
-function navigate(view) {
+function navigate(view, skipReset) {
   if (view === 'dashboard') { navigateDashboard(currentDashboardType || 'items'); return; }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1713,7 +1760,7 @@ function navigate(view) {
   if (dbParent) dbParent.classList.remove('active');
   document.getElementById(`view-${view}`)?.classList.add('active');
   document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
-  const titles = { 'dashboard-items':'Dashboard — Items', 'dashboard-stories':'Dashboard — User Stories', issues:'All Items & User Stories', 'new-issue':'Log New Item', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports' };
+  const titles = { 'dashboard-items':'Dashboard — Items', 'dashboard-stories':'Dashboard — User Stories', issues:'All Items & User Stories', 'new-issue':'Log New Item', 'user-story':'Create User Story', import:'Import XLSX', reports:'Reports', deleted:'Recently Deleted' };
   document.getElementById('topbar-title').textContent = titles[view] || view;
   // Show search bar only on All Items
   const searchBar = document.getElementById('topbar-search');
@@ -1723,7 +1770,7 @@ function navigate(view) {
   }
   const newBtn = document.getElementById('topbar-new-btn');
   if (newBtn) newBtn.style.display = (view === 'issues') ? '' : 'none';
-  if (view === 'issues') {
+  if (view === 'issues' && !skipReset) {
     // Reset all filters and search when clicking All Items nav
     const filterParticular = document.getElementById('filter-particular');
     const filterState      = document.getElementById('filter-state');
@@ -1743,6 +1790,7 @@ function navigate(view) {
   if (view === 'reports')     loadReportHistory();
   if (view === 'new-issue')   setTodayDate();
   if (view === 'user-story')  setUserStoryDate();
+  if (view === 'deleted')     loadDeletedIssues();
 }
 
 function openMaintenanceModal() {
@@ -1984,25 +2032,16 @@ function navigateDashboard(type) {
 }
 
 async function updateCombinedBadge() {
-async function refreshDashboardStats(type) {
   try {
-    // 'type' will be 'items' or 'stories'
-    const res = await fetch(`api/get_stats.php?type=${type}`);
-    const result = await res.json();
-
-    if (result.success) {
-      const d = result.data;
-      // Update the Total card with the database count
-      const totalElem = document.getElementById('si-total');
-      if (totalElem) totalElem.textContent = d.total || 0;
-      
-      // Update other status-specific cards if necessary
-      if (document.getElementById('si-open')) 
-          document.getElementById('si-open').textContent = d.open || 0;
-    }
-  } catch (err) {
-    console.error("Failed to fetch accurate database count:", err);
-  }
+    const [rItems, rStories] = await Promise.all([
+      apiFetch('/get_stats.php?type=items'),
+      apiFetch('/get_stats.php?type=stories')
+    ]);
+    const totalItems   = rItems?.data?.total   || 0;
+    const totalStories = rStories?.data?.total || 0;
+    const el = document.getElementById('badge-open');
+    if (el) el.textContent = totalItems + totalStories;
+  } catch { }
 }
 
 async function loadDashboard(type) {
@@ -2078,18 +2117,21 @@ function filterFromDashboard(type, state) {
   document.querySelectorAll('#' + carouselId + ' .stat-card').forEach(c => c.classList.remove('active-filter'));
   if (state) event.currentTarget?.classList.add('active-filter');
 
-  // Navigate to All Items with filter pre-applied
-  navigate('issues');
-  setTimeout(() => {
-    const stateFilter = document.getElementById('filter-state');
-    const mineFilter  = document.getElementById('filter-mine-btn');
-    if (stateFilter) stateFilter.value = state;
-    if (mineFilter && type === 'stories') mineFilter.value = 'story';
-    else if (mineFilter) mineFilter.value = 'all';
-    loadIssues();
-    // Show back button
-    showBackToDashboard(type);
-  }, 100);
+  // Navigate first, skipping the auto-reset so our filters below aren't wiped
+  navigate('issues', true);
+
+  // Set filters AFTER navigate() so they don't get wiped by its reset logic
+  const stateFilter = document.getElementById('filter-state');
+  const mineFilter  = document.getElementById('filter-mine-btn');
+  if (stateFilter) stateFilter.value = state;
+  if (mineFilter)  mineFilter.value  = type === 'stories' ? 'all_stories' : 'all_items';
+  _filterMine = type === 'stories' ? 'all_stories' : 'all_items';
+
+  // Now load with the correct filters applied
+  loadIssues();
+
+  // Show back button
+  showBackToDashboard(type);
 }
 
 function showBackToDashboard(type) {
@@ -2247,7 +2289,7 @@ async function loadIssues() {
   const assignedTo = document.getElementById('filter-assigned-to')?.value  || '';
 
   // Status values live in the status column, not state
-  // Only true status column values — 'New' and 'Monitoring' are states, not statuses
+  // Only true status column values
   const statusValues = ['Open','In Progress','Closed'];
   const isStatusFilter = statusValues.includes(stateVal);
   const state  = isStatusFilter ? '' : stateVal;
@@ -3345,8 +3387,7 @@ async function saveEdit() {
         { key: 'priority',  label: 'Priority',     oldVal: normalise(old.priority),                                            newVal: normalise(dto.priority) },
         { key: 'assignedTo',label: 'Assigned To',  oldVal: normalise(old.assignedToName || old.assigned_to_name || resolveUserName(old.assigned_to)), newVal: normalise(resolveUserName(dto.assignedTo)) },
         { key: 'issuedBy',  label: 'Created By',   oldVal: normalise(old.issuedByName   || old.issued_by_name   || resolveUserName(old.issued_by)),   newVal: normalise(resolveUserName(dto.issuedBy)) },
-        { key: 'description', label: 'Description', oldVal: normalise(old.description).replace(/<[^>]*>/g, ''),                 newVal: normalise(dto.description).replace(/<[^>]*>/g, '') },
-        ];
+      ];
       for (const f of fields) {
         // Only log if the value actually changed (same-to-same is skipped)
         if (f.oldVal !== f.newVal) {
@@ -3414,19 +3455,158 @@ async function saveEdit() {
 // DELETE
 // ============================================================
 async function deleteIssue(id) {
-  if (!confirm('Delete this issue? This cannot be undone.')) return;
+  if (!confirm('Move this issue to Recently Deleted?\n\nIt will be permanently deleted after 30 days.')) return;
+
+  const userId = localStorage.getItem('userId') || '';
+
   try {
-    // FIX: id as query param, GET method (PHP reads $_GET)
-    const res = await apiFetch(`/delete_issue.php?id=${id}`, { method: 'GET' });
+    const res = await apiFetch(`/soft_delete_issue.php?id=${id}&deletedBy=${userId}`, { method: 'GET' });
     if (res.success) {
       closeModal('issue-detail-modal');
-      toast('Issue deleted.', 'info');
-      loadDashboard(currentDashboardType); updateCombinedBadge();
+      toast('Moved to Recently Deleted.', 'info');
+      loadDashboard(currentDashboardType);
+      updateCombinedBadge();
+      updateDeletedBadge();
       if (document.getElementById('view-issues').classList.contains('active')) loadIssues();
     } else {
       toast(res.message || 'Delete failed.', 'error');
     }
   } catch { toast('Delete failed.', 'error'); }
+}
+
+async function loadDeletedIssues() {
+  const tbody = document.getElementById('deleted-issues-body');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="loader"></div></div></td></tr>`;
+
+  try {
+    const res = await apiFetch('/get_deleted_issues.php');
+    const issues = res.data || [];
+
+    updateDeletedBadge(issues.length);
+
+    if (!issues.length) {
+      tbody.innerHTML = `
+        <tr><td colspan="11">
+          <div class="empty-state">
+            <div class="es-icon">🗑️</div>
+            <div class="es-title">Bin is empty</div>
+            <div class="es-sub">Deleted items will appear here for 30 days before being permanently removed.</div>
+          </div>
+        </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = issues.map(i => {
+      const isStory   = i.source === 'user_story';
+      const typeLabel = isStory ? 'STORY' : 'ITEM';
+      const typeBg    = isStory ? 'rgba(74,100,206,0.15)' : 'rgba(204,0,0,0.12)';
+      const typeColor = isStory ? '#4a64ce' : '#cc0000';
+
+      const days = i.daysRemaining ?? i.days_remaining ?? 0;
+      const daysColor = days <= 3 ? '#cc0000' : days <= 7 ? '#e07b20' : '#2e9e6b';
+      const daysLabel = days <= 0 ? 'Expires soon' : `${days}d left`;
+
+      const deletedOn = i.deleted_at
+        ? new Date(i.deleted_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'2-digit' })
+        : '—';
+
+      return `
+        <tr style="opacity:0.85;">
+          <td class="td-id" style="color:#aaa;">#${i.id}</td>
+          <td>
+            <span style="padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;
+              font-family:'Roboto Mono',monospace;background:${typeBg};color:${typeColor};
+              letter-spacing:0.05em;">${typeLabel}</span>
+          </td>
+          <td style="font-size:12px;">${escHtml(i.particular_name || i.particularName || '—')}</td>
+          <td style="font-size:12px;">${escHtml(i.module || '—')}</td>
+          <td class="td-desc" style="color:#888;">
+            ${escHtml(stripHtml(i.title || i.description || '').substring(0, 80))}
+          </td>
+          <td>${stateBadge(i.state)}</td>
+          <td>${priBadge(i.priority)}</td>
+          <td style="font-size:12px;color:#888;">${escHtml(i.deletedByName || i.deleted_by_name || '—')}</td>
+          <td class="td-date" style="color:#aaa;">${deletedOn}</td>
+          <td>
+            <span style="font-size:11px;font-weight:700;font-family:'Roboto Mono',monospace;color:${daysColor};">
+              ${daysLabel}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-success btn-xs" onclick="restoreIssue(${i.id})">↩ Restore</button>
+              <button class="btn btn-danger btn-xs" onclick="permanentDeleteIssue(${i.id})">✕ Delete</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+  } catch {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      <div class="es-icon">⚠️</div>
+      <div class="es-title">Failed to load deleted items</div>
+    </div></td></tr>`;
+  }
+}
+
+async function restoreIssue(id) {
+  if (!confirm('Restore this issue back to active?')) return;
+  try {
+    const res = await apiFetch(`/restore_issue.php?id=${id}`, { method: 'GET' });
+    if (res.success) {
+      toast('Issue restored!', 'success');
+      loadDeletedIssues();
+      updateCombinedBadge();
+    } else {
+      toast(res.message || 'Restore failed.', 'error');
+    }
+  } catch { toast('Restore failed.', 'error'); }
+}
+
+async function permanentDeleteIssue(id) {
+  if (!confirm('Permanently delete this issue?\n\nThis CANNOT be undone.')) return;
+  try {
+    const res = await apiFetch(`/permanent_delete_issue.php?id=${id}`, { method: 'GET' });
+    if (res.success) {
+      toast('Permanently deleted.', 'info');
+      loadDeletedIssues();
+    } else {
+      toast(res.message || 'Failed to delete.', 'error');
+    }
+  } catch { toast('Permanent delete failed.', 'error'); }
+}
+
+async function emptyDeletedBin() {
+  if (!confirm('Permanently delete ALL items in the bin?\n\nThis CANNOT be undone.')) return;
+  try {
+    const res = await apiFetch('/get_deleted_issues.php');
+    const issues = res.data || [];
+    if (!issues.length) { toast('Bin is already empty.', 'info'); return; }
+
+    for (const i of issues) {
+      await apiFetch(`/permanent_delete_issue.php?id=${i.id}`, { method: 'GET' });
+    }
+    toast(`${issues.length} item(s) permanently deleted.`, 'info');
+    loadDeletedIssues();
+  } catch { toast('Failed to empty bin.', 'error'); }
+}
+
+function updateDeletedBadge(count) {
+  if (count === undefined) {
+    apiFetch('/get_deleted_issues.php')
+      .then(res => updateDeletedBadge((res.data || []).length))
+      .catch(() => {});
+    return;
+  }
+  const badge = document.getElementById('badge-deleted');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 let accumulatedFiles = new DataTransfer();
