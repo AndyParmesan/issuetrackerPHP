@@ -13,6 +13,7 @@ try {
     $priority   = $_GET['priority']   ?? '';
     $search     = $_GET['search']     ?? '';
     $particular = $_GET['particular'] ?? '';
+    $date       = $_GET['date']        ?? '';
 
     $sql = "SELECT 
                 i.id,
@@ -60,6 +61,10 @@ try {
     if (!empty($particular)) {
         $sql .= " AND i.particular_id = :particular";
         $params[':particular'] = $particular;
+    }
+    if (!empty($date)) {
+        $sql .= " AND i.date_identified = :date";
+        $params[':date'] = $date;
     }
     if (!empty($search)) {
         $sql .= " AND (

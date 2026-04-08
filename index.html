@@ -300,7 +300,12 @@ tbody td { padding: 11px 14px; color: var(--text-main); vertical-align: middle; 
 .filter-select { background: #ffffff; border: 1px solid var(--border); border-radius: 7px; color: var(--text-main); padding: 6px 12px; font-family: 'Raleway', sans-serif; font-size: 12.5px; cursor: pointer; outline: none; transition: border-color 0.2s; }
 .filter-select:hover, .filter-select:focus { border-color: rgba(204,0,0,0.4); }
 .filter-select option { background: #ffffff; color: #333333; }
-
+input[type="date"].filter-select {
+  box-sizing: border-box;
+  width: 130px;         /* Restricts it from stretching too wide */
+  height: 31px;         /* Forces it to be the exact same height as the dropdowns */
+  padding: 4px 8px;     /* Reduces the internal padding so the date fits inside */
+}
 /* ===== MODAL ===== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
@@ -641,6 +646,8 @@ select.form-control option { background: #ffffff; color: #333333; }
               <option value="item">My Items</option>
               <option value="story">My User Story</option>
             </select>
+            <input type="date" id="filter-date" class="filter-select" onchange="loadIssues()" title="Filter by Date" />
+            
             <button class="btn btn-ghost btn-sm" onclick="exportIssues()">⬇ Export XLSX</button>
           </div>
         </div>
@@ -1778,12 +1785,15 @@ function navigate(view, skipReset) {
     const filterAssignedTo = document.getElementById('filter-assigned-to');
     const filterMine       = document.getElementById('filter-mine-btn');
     const globalSearch     = document.getElementById('global-search');
+    const filterDate       = document.getElementById('filter-date');
+    if (filterDate)        filterDate.value        = '';
     if (filterParticular)  filterParticular.value  = '';
     if (filterState)       filterState.value       = '';
     if (filterPriority)    filterPriority.value    = '';
     if (filterAssignedTo)  filterAssignedTo.value  = '';
     if (filterMine)        filterMine.value        = 'all';
     if (globalSearch)      globalSearch.value      = '';
+    
     _filterMine = 'all';
     loadIssues();
   }
@@ -2194,13 +2204,28 @@ function renderDashboardChart(canvasId, data, title) {
         const idx = elements[0].index;
         const priority = (data||[])[idx]?.priority;
         if (!priority) return;
-        // Navigate to All Items with priority filter
-        showView('issues');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        setTimeout(() => {
-          const pf = document.getElementById('filter-priority');
-          if (pf) { pf.value = priority; loadIssues(); }
-        }, 100);
+        
+        // 1. Figure out if we are clicking the Items chart or Stories chart
+        const isStories = canvasId.includes('stories');
+        const type = isStories ? 'stories' : 'items';
+
+        // 2. Navigate to All Items view WITHOUT resetting filters (skipReset = true)
+        navigate('issues', true); 
+
+        // 3. Set the Priority filter
+        const pf = document.getElementById('filter-priority');
+        if (pf) pf.value = priority;
+        
+        // 4. Set the Item/Story filter so it doesn't mix them up
+        const mf = document.getElementById('filter-mine-btn');
+        if (mf) mf.value = isStories ? 'all_stories' : 'all_items';
+        _filterMine = isStories ? 'all_stories' : 'all_items';
+
+        // 5. Load the filtered data
+        loadIssues();
+        
+        // 6. Show the back button to return to the dashboard
+        showBackToDashboard(type);
       },
       onHover: (evt, elements) => {
         evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
@@ -2287,9 +2312,11 @@ async function loadIssues() {
   const particular = document.getElementById('filter-particular')?.value || '';
   const search     = document.getElementById('global-search')?.value.trim() || '';
   const assignedTo = document.getElementById('filter-assigned-to')?.value  || '';
+  
+  // ADDED: Just this one line for the date
+  const filterDate = document.getElementById('filter-date')?.value || ''; 
 
   // Status values live in the status column, not state
-  // Only true status column values
   const statusValues = ['Open','In Progress','Closed'];
   const isStatusFilter = statusValues.includes(stateVal);
   const state  = isStatusFilter ? '' : stateVal;
@@ -2301,9 +2328,15 @@ async function loadIssues() {
   if (priority)   params.set('priority', priority);
   if (particular) params.set('particular', particular);
   if (search)     params.set('search', search);
+  
+  // ADDED: Push the date into the URL parameters
+  if (filterDate) params.set('date', filterDate);
+
+  // MISSING 'try {' ADDED HERE
   try {
-    const res = await apiFetch(`/get_issues.php?${params}`);
+    const res = await apiFetch(`/get_issues.php?${params.toString()}`);
     let issues = res.data || [];
+
     if (search) {
       const q = search.toLowerCase();
       const isNumeric = !isNaN(search) && search.trim() !== '';
@@ -2314,17 +2347,21 @@ async function loadIssues() {
         (i.title       || '').toLowerCase().includes(q)
       );
     }
+
     // Filter by assigned to
     if (assignedTo) {
       issues = issues.filter(i =>
         (i.assigned_to_name || i.assignedToName || '').toLowerCase() === assignedTo.toLowerCase()
       );
     }
+
     // Client-side status filter fallback (in case get_issues.php doesn't handle status param)
     if (status) {
       issues = issues.filter(i => (i.status || '').toLowerCase() === status.toLowerCase());
     }
+
     _issuesCache = issues;
+
     // Apply My Items / My Story / All Items / All User Story filter
     if (_filterMine === 'item' || _filterMine === 'story') {
       const myId = String(localStorage.getItem('userId') || '');
@@ -2340,15 +2377,19 @@ async function loadIssues() {
     } else if (_filterMine === 'all_stories') {
       _issuesCache = issues.filter(i => i.source === 'user_story');
     }
+
     // Sort: highest ID first by default; ascending when searching by number
     if (search && !isNaN(search)) {
       _issuesCache = [..._issuesCache].sort((a, b) => a.id - b.id);
     } else {
       _issuesCache = [..._issuesCache].sort((a, b) => b.id - a.id);
     }
+
     _issuesPage  = 1;
     renderIssuesPage();
-  } catch { }
+  } catch (error) {
+    console.error("Error loading issues:", error);
+  }
 }
 
 function renderIssuesPage() {
@@ -4178,7 +4219,7 @@ function renderReportHistory(list) {
       ).join('')
     : '<div class="empty-state"><div class="es-icon">&#128203;</div><div class="es-title">No reports found</div><div class="es-sub">Try a different date or generate a new report.</div></div>';
 }
-
+    
 async function exportIssues() {
   const state    = document.getElementById('filter-state')?.value    || '';
   const priority = document.getElementById('filter-priority')?.value || '';
@@ -4191,8 +4232,27 @@ async function exportIssues() {
   toast('Preparing XLSX export…', 'info');
 
   try {
-    const res = await apiFetch(`/get_issues.php?${params}`);
-    const issues = res.data || [];
+    const res = await apiFetch(`/get_issues.php?${params.toString()}`);
+    let issues = res.data || [];
+
+    // ---------------------------------------------------------
+    // ADDED: Filter the data in JavaScript just like the table does!
+    // ---------------------------------------------------------
+    if (_filterMine === 'item' || _filterMine === 'story') {
+      const myId = String(localStorage.getItem('userId') || '');
+      issues = issues.filter(i => {
+        const isMine  = String(i.assigned_to || '') === myId || String(i.issued_by || '') === myId;
+        const isStory = i.source === 'user_story';
+        if (_filterMine === 'item')  return isMine && !isStory;
+        if (_filterMine === 'story') return isMine && isStory;
+        return isMine;
+      });
+    } else if (_filterMine === 'all_items') {
+      issues = issues.filter(i => i.source !== 'user_story');
+    } else if (_filterMine === 'all_stories') {
+      issues = issues.filter(i => i.source === 'user_story');
+    }
+    // ---------------------------------------------------------
 
     if (!issues.length) { toast('No issues to export.', 'error'); return; }
 
